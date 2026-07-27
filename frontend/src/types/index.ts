@@ -59,5 +59,6 @@ export interface DashboardStats {
   todayRevenue: number;
   todayExpenses: number;
   totalCustomers: number;
+  totalProducts: number;
   recentBills: Bill[];
 }

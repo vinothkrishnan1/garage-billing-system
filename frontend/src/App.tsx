@@ -6,7 +6,6 @@ import { BillHistory } from './pages/BillHistory';
 import { ProductMaster } from './pages/ProductMaster';
 import { CustomerMaster } from './pages/CustomerMaster';
 import { Expenses } from './pages/Expenses';
-import { ExpenseReport } from './pages/ExpenseReport';
 import { Bill } from './types';
 import { InvoicePrintModal } from './components/InvoicePrintModal';
 
@@ -67,8 +66,6 @@ export const App: React.FC = () => {
         )}
 
         {activeTab === 'expenses' && <Expenses />}
-
-        {activeTab === 'expense-report' && <ExpenseReport />}
 
         {activeTab === 'customers' && <CustomerMaster />}
 

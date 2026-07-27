@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchDashboardStats } from '../services/api';
 import { DashboardStats, Bill } from '../types';
-import { FileText, DollarSign, Users, PlusCircle, Eye, ArrowUpRight, Coins } from 'lucide-react';
+import { FileText, DollarSign, Users, PlusCircle, Eye, ArrowUpRight, Package } from 'lucide-react';
 import { formatBillNo } from '../utils/format';
 
 interface DashboardProps {
@@ -103,17 +103,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNewBill, onViewBill, onV
           </div>
         </div>
 
-        {/* Today's Expenses */}
+        {/* Product Master */}
         <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Today's Expenses</p>
-              <h3 className="text-2xl font-extrabold text-rose-600 mt-1">
-                {loading ? '...' : formatCurrency(stats?.todayExpenses || 0)}
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Product Master</p>
+              <h3 className="text-2xl font-extrabold text-slate-900 mt-1">
+                {loading ? '...' : stats?.totalProducts || 0}
               </h3>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
-              <Coins className="w-6 h-6" />
+            <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+              <Package className="w-6 h-6" />
             </div>
           </div>
         </div>

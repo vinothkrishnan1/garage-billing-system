@@ -7,6 +7,8 @@ export const Expenses: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   // Modals / Form State
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -24,13 +26,13 @@ export const Expenses: React.FC = () => {
   const [successMsg, setSuccessMsg] = useState('');
 
   useEffect(() => {
-    loadExpenses();
+    loadExpenses('', '', '');
   }, []);
 
-  const loadExpenses = async () => {
+  const loadExpenses = async (searchVal = search, startVal = startDate, endVal = endDate) => {
     try {
       setLoading(true);
-      const data = await fetchExpenses(search);
+      const data = await fetchExpenses(searchVal, startVal, endVal);
       setExpenses(data);
     } catch (err: any) {
       console.error('Failed to load expenses:', err);
@@ -41,7 +43,14 @@ export const Expenses: React.FC = () => {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    loadExpenses();
+    loadExpenses(search, startDate, endDate);
+  };
+
+  const handleClearFilters = () => {
+    setSearch('');
+    setStartDate('');
+    setEndDate('');
+    loadExpenses('', '', '');
   };
 
   const handleOpenAdd = async () => {
@@ -123,6 +132,8 @@ export const Expenses: React.FC = () => {
     }
   };
 
+  const totalExpenseAmount = expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
+
   return (
     <div className="space-y-6">
       {/* Top Welcome & Actions */}
@@ -136,7 +147,7 @@ export const Expenses: React.FC = () => {
 
         <div className="flex items-center space-x-3">
           <button
-            onClick={loadExpenses}
+            onClick={() => loadExpenses()}
             className="flex items-center space-x-1.5 px-3 py-2 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors"
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -161,24 +172,99 @@ export const Expenses: React.FC = () => {
       )}
 
       {/* Filter / Search Bar */}
-      <form onSubmit={handleSearchSubmit} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search expenses by remarks or amount..."
-            className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+      <form onSubmit={handleSearchSubmit} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        {/* Text Search */}
+        <div className="md:col-span-2">
+          <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+            Search Remarks / Amount
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search expenses by remarks or amount..."
+              className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          </div>
         </div>
-        <button
-          type="submit"
-          className="bg-slate-800 hover:bg-slate-900 text-white font-bold px-5 py-1.5 rounded-lg text-sm transition-colors shadow-sm"
-        >
-          Search
-        </button>
+
+        {/* From Date */}
+        <div>
+          <label className="block text-xs font-bold text-slate-700 uppercase mb-1 flex items-center gap-1">
+            <Calendar className="w-3.5 h-3.5 text-slate-400" /> From Date
+          </label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+          />
+        </div>
+
+        {/* To Date */}
+        <div>
+          <label className="block text-xs font-bold text-slate-700 uppercase mb-1 flex items-center gap-1">
+            <Calendar className="w-3.5 h-3.5 text-slate-400" /> To Date
+          </label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+          />
+        </div>
+
+        {/* Filter buttons */}
+        <div className="md:col-span-4 flex flex-wrap gap-2 justify-end">
+          {(search || startDate || endDate) && (
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-sm font-bold transition-colors"
+            >
+              Clear Filters
+            </button>
+          )}
+          <button
+            type="submit"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-2 rounded-lg text-sm transition-colors shadow-sm flex items-center gap-2"
+          >
+            <Search className="w-4 h-4" />
+            <span>Apply Filters</span>
+          </button>
+        </div>
       </form>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {/* Total Count */}
+        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Entries</p>
+            <h3 className="text-2xl font-extrabold text-indigo-600 mt-1">
+              {loading ? '...' : expenses.length}
+            </h3>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+            <FileText className="w-6 h-6" />
+          </div>
+        </div>
+
+        {/* Total Expense Amount */}
+        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Expense Amount</p>
+            <h3 className="text-2xl font-extrabold text-rose-600 mt-1">
+              {loading ? '...' : `₹ ${totalExpenseAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
+            </h3>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
+            <DollarSign className="w-6 h-6" />
+          </div>
+        </div>
+      </div>
 
       {/* Expense List Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">

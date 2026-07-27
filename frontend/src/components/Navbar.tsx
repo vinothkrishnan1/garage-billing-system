@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, FileText, History, Package, Users, PlusCircle, Wrench, Coins, FileSpreadsheet } from 'lucide-react';
+import { LayoutDashboard, FileText, History, Package, Users, PlusCircle, Wrench, Coins } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: string;
@@ -13,9 +13,8 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onQuick
     { id: 'billing', label: 'New Bill', icon: FileText },
     { id: 'history', label: 'Bill History', icon: History },
     { id: 'expenses', label: 'Expenses', icon: Coins },
-    { id: 'expense-report', label: 'Expense Report', icon: FileSpreadsheet },
-    { id: 'customers', label: 'Customer Master', icon: Users },
-    { id: 'products', label: 'Product Master', icon: Package },
+    { id: 'customers', label: 'Customers', icon: Users },
+    { id: 'products', label: 'Products', icon: Package },
   ];
 
   return (
@@ -23,21 +22,18 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onQuick
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
-          {/* Logo & Garage Branding */}
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
-            <div className="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/30">
+          {/* Logo & Garage Branding – single line */}
+          <div className="flex items-center space-x-3 cursor-pointer shrink-0" onClick={() => setActiveTab('dashboard')}>
+            <div className="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/30 shrink-0">
               <Wrench className="w-6 h-6 text-white" />
             </div>
-            <div>
-              <span className="text-xl font-bold tracking-wider text-white flex items-center gap-2">
-                VICKY'S GARAGE <span className="text-xs font-normal text-indigo-400 bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-800">Royal Enfield Specialist</span>
-              </span>
-              <p className="text-xs text-slate-400">Billing & Management System</p>
-            </div>
+            <span className="text-sm lg:text-base font-bold tracking-wide text-white whitespace-nowrap">
+              VICKY'S GARAGE – SPECIALIZED IN ROYAL ENFIELD – BILLING & MANAGEMENT SYSTEM
+            </span>
           </div>
 
           {/* Navigation Items */}
-          <nav className="hidden md:flex items-center space-x-1">
+          <nav className="hidden md:flex items-center space-x-1 shrink-0">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -45,13 +41,13 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onQuick
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex items-center space-x-1.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
                     isActive
                       ? 'bg-indigo-600 text-white shadow-sm'
                       : 'text-slate-300 hover:text-white hover:bg-slate-800'
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-3.5 h-3.5" />
                   <span>{item.label}</span>
                 </button>
               );
@@ -59,10 +55,10 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onQuick
           </nav>
 
           {/* Quick Action Button */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 shrink-0">
             <button
               onClick={onQuickNewBill}
-              className="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:shadow-lg transition-all"
+              className="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:shadow-lg transition-all whitespace-nowrap"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Create Bill</span>

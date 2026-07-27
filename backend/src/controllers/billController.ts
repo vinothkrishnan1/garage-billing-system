@@ -290,7 +290,8 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     const todayRevenue = todayBills.reduce((acc, b) => acc + (b.total_amount || 0), 0);
 
     const custCountRow = await dbGet<{ count: number }>('SELECT COUNT(*) as count FROM customers');
-    const recentBills = await dbAll('SELECT * FROM bills ORDER BY bill_no DESC LIMIT 5');
+    const prodCountRow = await dbGet<{ count: number }>('SELECT COUNT(*) as count FROM products');
+    const recentBills = await dbAll('SELECT * FROM bills WHERE bill_date = ? ORDER BY bill_no DESC', [today]);
 
     const todayExpenses = await expenseService.getTodayExpenses(today);
 
@@ -301,6 +302,7 @@ export const getDashboardStats = async (req: Request, res: Response) => {
         todayRevenue: todayRevenue,
         todayExpenses: todayExpenses,
         totalCustomers: custCountRow ? custCountRow.count : 0,
+        totalProducts: prodCountRow ? prodCountRow.count : 0,
         recentBills
       }
     });
