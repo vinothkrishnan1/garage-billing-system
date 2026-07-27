@@ -1,0 +1,310 @@
+import { Request, Response } from 'express';
+import { dbAll, dbGet, dbRun } from '../db/database';
+import { expenseService } from './expenseController';
+
+export const getNextBillNo = async (req: Request, res: Response) => {
+  try {
+    const row = await dbGet<{ maxBillNo: number | null }>('SELECT MAX(bill_no) as maxBillNo FROM bills');
+    const nextBillNo = (row && row.maxBillNo ? row.maxBillNo : 0) + 1;
+    res.json({ success: true, nextBillNo });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getBills = async (req: Request, res: Response) => {
+  try {
+    const search = (req.query.search as string) || '';
+    const startDate = (req.query.startDate as string) || '';
+    const endDate = (req.query.endDate as string) || '';
+
+    let sql = 'SELECT * FROM bills WHERE 1=1';
+    let params: any[] = [];
+
+    if (search) {
+      sql += ' AND (vehicle_number LIKE ? OR customer_name LIKE ? OR mobile_number LIKE ? OR CAST(bill_no AS TEXT) LIKE ?';
+      const term = `%${search}%`;
+      params.push(term, term, term, term);
+
+      const parsedNum = parseInt(search, 10);
+      if (!isNaN(parsedNum)) {
+        sql += ' OR bill_no = ?';
+        params.push(parsedNum);
+      }
+      sql += ')';
+    }
+
+    if (startDate) {
+      sql += ' AND bill_date >= ?';
+      params.push(startDate);
+    }
+
+    if (endDate) {
+      sql += ' AND bill_date <= ?';
+      params.push(endDate);
+    }
+
+    sql += ' ORDER BY bill_no DESC';
+
+    const bills = await dbAll(sql, params);
+    res.json({ success: true, data: bills });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getBillById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const bill = await dbGet('SELECT * FROM bills WHERE id = ?', [id]);
+    if (!bill) {
+      return res.status(404).json({ success: false, message: 'Bill not found' });
+    }
+
+    const items = await dbAll('SELECT * FROM bill_items WHERE bill_id = ? ORDER BY s_no ASC', [id]);
+    res.json({ success: true, data: { ...bill, items } });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const createBill = async (req: Request, res: Response) => {
+  try {
+    const {
+      bill_no,
+      vehicle_number,
+      vehicle_model,
+      customer_name,
+      mobile_number,
+      km_driven,
+      bill_date,
+      total_amount,
+      advance_amount,
+      complaint,
+      items
+    } = req.body;
+
+    if (!vehicle_number || !bill_date || !items || !Array.isArray(items)) {
+      return res.status(400).json({ success: false, message: 'Vehicle number, date, and items are required' });
+    }
+
+    const cleanVehicle = vehicle_number.trim().toUpperCase();
+    const cleanModel = (vehicle_model || '').trim();
+    const cleanName = (customer_name || '').trim();
+    const cleanMobile = (mobile_number || '').trim();
+    const kmNum = Number(km_driven) || 0;
+    const totalNum = Number(total_amount) || 0;
+    const advanceNum = Number(advance_amount) || 0;
+    const balanceNum = totalNum - advanceNum;
+
+    // 1. Auto-update or auto-create Customer Master
+    let customerId: number | null = null;
+    const existingCust = await dbGet<{ id: number }>('SELECT id FROM customers WHERE vehicle_number = ?', [cleanVehicle]);
+    if (existingCust) {
+      customerId = existingCust.id;
+      await dbRun(
+        'UPDATE customers SET vehicle_model = ?, customer_name = ?, mobile_number = ?, km_driven = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        [cleanModel || '', cleanName, cleanMobile, kmNum, customerId]
+      );
+    } else {
+      const custRes = await dbRun(
+        'INSERT INTO customers (vehicle_number, vehicle_model, km_driven, customer_name, mobile_number) VALUES (?, ?, ?, ?, ?)',
+        [cleanVehicle, cleanModel || '', kmNum, cleanName, cleanMobile]
+      );
+      customerId = custRes.lastID;
+    }
+
+    // Determine bill number
+    let finalBillNo = bill_no;
+    if (!finalBillNo) {
+      const maxRow = await dbGet<{ maxBillNo: number | null }>('SELECT MAX(bill_no) as maxBillNo FROM bills');
+      finalBillNo = (maxRow && maxRow.maxBillNo ? maxRow.maxBillNo : 0) + 1;
+    }
+
+    // 2. Insert Bill
+    const billRes = await dbRun(
+      `INSERT INTO bills (bill_no, customer_id, vehicle_number, vehicle_model, customer_name, mobile_number, km_driven, bill_date, total_amount, advance_amount, balance_amount, complaint)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        finalBillNo,
+        customerId,
+        cleanVehicle,
+        cleanModel,
+        cleanName,
+        cleanMobile,
+        kmNum,
+        bill_date,
+        totalNum,
+        advanceNum,
+        balanceNum,
+        complaint || ''
+      ]
+    );
+
+    const newBillId = billRes.lastID;
+
+    // 3. Process items & Auto-create Products into Product Master
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const prodName = (item.product_name || '').trim().toUpperCase();
+      const qty = Number(item.qty) || 1;
+      const amount = Number(item.amount) || 0;
+
+      if (prodName !== '' && amount >= 0) {
+        // Check Product Master auto-update/create
+        const existingProd = await dbGet('SELECT id FROM products WHERE name = ?', [prodName]);
+        if (!existingProd) {
+          // Auto-insert product into master
+          const unitPrice = qty > 0 ? amount / qty : amount;
+          await dbRun(
+            'INSERT INTO products (name, stock_qty, selling_price) VALUES (?, ?, ?)',
+            [prodName, 100, unitPrice]
+          );
+        }
+
+        // Insert item line
+        await dbRun(
+          'INSERT INTO bill_items (bill_id, s_no, product_name, qty, amount) VALUES (?, ?, ?, ?, ?)',
+          [newBillId, item.s_no || (i + 1), prodName, qty, amount]
+        );
+      }
+    }
+
+    const createdBill = await dbGet('SELECT * FROM bills WHERE id = ?', [newBillId]);
+    const insertedItems = await dbAll('SELECT * FROM bill_items WHERE bill_id = ? ORDER BY s_no ASC', [newBillId]);
+
+    res.status(201).json({ success: true, data: { ...createdBill, items: insertedItems } });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateBill = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const {
+      vehicle_number,
+      vehicle_model,
+      customer_name,
+      mobile_number,
+      km_driven,
+      bill_date,
+      total_amount,
+      advance_amount,
+      complaint,
+      items
+    } = req.body;
+
+    const existingBill = await dbGet('SELECT * FROM bills WHERE id = ?', [id]);
+    if (!existingBill) {
+      return res.status(404).json({ success: false, message: 'Bill not found' });
+    }
+
+    const cleanVehicle = vehicle_number ? vehicle_number.trim().toUpperCase() : existingBill.vehicle_number;
+    const cleanModel = vehicle_model !== undefined ? vehicle_model.trim() : existingBill.vehicle_model;
+    const cleanName = customer_name !== undefined ? customer_name.trim() : existingBill.customer_name;
+    const cleanMobile = mobile_number !== undefined ? mobile_number.trim() : existingBill.mobile_number;
+    const kmNum = km_driven !== undefined ? Number(km_driven) : existingBill.km_driven;
+    const totalNum = total_amount !== undefined ? Number(total_amount) : existingBill.total_amount;
+    const advanceNum = advance_amount !== undefined ? Number(advance_amount) : existingBill.advance_amount;
+    const balanceNum = totalNum - advanceNum;
+
+    await dbRun(
+      `UPDATE bills SET vehicle_number = ?, vehicle_model = ?, customer_name = ?, mobile_number = ?, km_driven = ?, bill_date = ?, total_amount = ?, advance_amount = ?, balance_amount = ?, complaint = ? WHERE id = ?`,
+      [
+        cleanVehicle,
+        cleanModel,
+        cleanName,
+        cleanMobile,
+        kmNum,
+        bill_date || existingBill.bill_date,
+        totalNum,
+        advanceNum,
+        balanceNum,
+        complaint !== undefined ? complaint : existingBill.complaint,
+        id
+      ]
+    );
+
+    if (items && Array.isArray(items)) {
+      // Re-create items
+      await dbRun('DELETE FROM bill_items WHERE bill_id = ?', [id]);
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        const prodName = (item.product_name || '').trim().toUpperCase();
+        const qty = Number(item.qty) || 1;
+        const amount = Number(item.amount) || 0;
+
+        if (prodName !== '' && amount >= 0) {
+          // Check Product Master
+          const existingProd = await dbGet('SELECT id FROM products WHERE name = ?', [prodName]);
+          if (!existingProd) {
+            const unitPrice = qty > 0 ? amount / qty : amount;
+            await dbRun(
+              'INSERT INTO products (name, stock_qty, selling_price) VALUES (?, ?, ?)',
+              [prodName, 100, unitPrice]
+            );
+          }
+
+          await dbRun(
+            'INSERT INTO bill_items (bill_id, s_no, product_name, qty, amount) VALUES (?, ?, ?, ?, ?)',
+            [id, item.s_no || (i + 1), prodName, qty, amount]
+          );
+        }
+      }
+    }
+
+    const updatedBill = await dbGet('SELECT * FROM bills WHERE id = ?', [id]);
+    const updatedItems = await dbAll('SELECT * FROM bill_items WHERE bill_id = ? ORDER BY s_no ASC', [id]);
+
+    res.json({ success: true, data: { ...updatedBill, items: updatedItems } });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteBill = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const existing = await dbGet('SELECT * FROM bills WHERE id = ?', [id]);
+    if (!existing) {
+      return res.status(404).json({ success: false, message: 'Bill not found' });
+    }
+
+    await dbRun('DELETE FROM bill_items WHERE bill_id = ?', [id]);
+    await dbRun('DELETE FROM bills WHERE id = ?', [id]);
+
+    res.json({ success: true, message: 'Bill deleted successfully' });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getDashboardStats = async (req: Request, res: Response) => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+
+    const todayBills = await dbAll('SELECT * FROM bills WHERE bill_date = ?', [today]);
+    const todayCount = todayBills.length;
+    const todayRevenue = todayBills.reduce((acc, b) => acc + (b.total_amount || 0), 0);
+
+    const custCountRow = await dbGet<{ count: number }>('SELECT COUNT(*) as count FROM customers');
+    const recentBills = await dbAll('SELECT * FROM bills ORDER BY bill_no DESC LIMIT 5');
+
+    const todayExpenses = await expenseService.getTodayExpenses(today);
+
+    res.json({
+      success: true,
+      stats: {
+        todayBillsCount: todayCount,
+        todayRevenue: todayRevenue,
+        todayExpenses: todayExpenses,
+        totalCustomers: custCountRow ? custCountRow.count : 0,
+        recentBills
+      }
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
