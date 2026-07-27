@@ -288,7 +288,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
 
   return (
     <div className="space-y-6">
-      
+
       {/* Top Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
         <div>
@@ -348,7 +348,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
 
       {/* Form Container */}
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
-        
+
         {/* Section 1: Customer & Vehicle Information */}
         <div>
           <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 border-b border-slate-200 pb-2 mb-4">
@@ -356,7 +356,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            
+
             {/* Bill Date */}
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Billing Date</label>
@@ -403,7 +403,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
                 type="text"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="e.g. U.Vignesh Kumar"
+                placeholder="e.g. Vignesh"
                 className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-md text-sm font-medium focus:ring-2 focus:ring-indigo-500 uppercase"
               />
             </div>
@@ -415,7 +415,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
                 type="text"
                 value={mobileNumber}
                 onChange={(e) => setMobileNumber(e.target.value)}
-                placeholder="e.g. 9840012345"
+                placeholder="e.g. 1234567890"
                 className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-md text-sm font-medium focus:ring-2 focus:ring-indigo-500"
               />
             </div>
@@ -427,7 +427,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
                 type="number"
                 value={kmDriven}
                 onChange={(e) => setKmDriven(e.target.value === '' ? '' : Number(e.target.value))}
-                placeholder="e.g. 8047"
+                placeholder="e.g. 18047"
                 className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-md text-sm font-medium focus:ring-2 focus:ring-indigo-500"
               />
             </div>
@@ -459,7 +459,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
                 {items.map((item, idx) => (
                   <tr key={idx} className="hover:bg-indigo-50/40 transition-colors">
                     <td className="px-3 py-1 text-center font-bold text-slate-500">{item.s_no}</td>
-                    
+
                     {/* Searchable Product Autocomplete */}
                     <td className="px-2 py-1">
                       <AutocompleteSelect
@@ -531,7 +531,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
 
         {/* Section 3: Bill Summary & Complaint Block */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 pt-4 border-t border-slate-200">
-          
+
           {/* Complaint Text Area */}
           <div className="md:col-span-7 space-y-2">
             <label className="block text-xs font-extrabold uppercase text-slate-800">
@@ -551,7 +551,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
 
           {/* Totals Summary */}
           <div className="md:col-span-5 bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
-            
+
             {/* Total Bill Amount */}
             <div className="flex items-center justify-between text-sm">
               <span className="font-bold text-slate-700 uppercase">Total Bill Amount</span>

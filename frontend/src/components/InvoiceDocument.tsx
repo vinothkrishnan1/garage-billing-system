@@ -147,7 +147,7 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ bill }) => {
           }}>
             <p className="font-text" style={{ fontSize: '13px', fontWeight: 'bold', margin: '0 0 2px 0', fontFamily: FONT_TEXT }}>U.Vignesh Kumar</p>
             <p className="font-text" style={{ fontSize: '13px', fontWeight: 'bold', margin: 0, fontFamily: FONT_TEXT }}>
-              📞 <span className="font-numeric" style={{ fontFamily: FONT_NUMERIC }}>+91 98400 12345</span>
+              📞 <span className="font-numeric" style={{ fontFamily: FONT_NUMERIC }}>+91 99417 49495</span>
             </p>
           </div>
         </div>
@@ -233,7 +233,7 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ bill }) => {
               fontFamily: FONT_TEXT,
             }}>
               <th className="font-text" style={{ width: '42px', padding: '4px 2px', fontFamily: FONT_TEXT }}>S.No</th>
-              <th className="font-text" style={{ padding: '4px 8px', textAlign: 'left', fontFamily: FONT_TEXT }}>PARTICULAR</th>
+              <th className="font-text" style={{ padding: '4px 8px', textAlign: 'center', fontFamily: FONT_TEXT }}>PARTICULAR</th>
               <th className="font-text" style={{ width: '50px', padding: '4px 2px', fontFamily: FONT_TEXT }}>QTY</th>
               <th className="font-text" style={{ width: '140px', padding: '0', fontFamily: FONT_TEXT }}>
                 <div className="font-text" style={{ borderBottom: '1px solid #1a237e', padding: '2px 4px', fontFamily: FONT_TEXT }}>AMOUNT</div>

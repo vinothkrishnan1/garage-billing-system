@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchDashboardStats } from '../services/api';
+import { fetchDashboardStats, fetchBillById } from '../services/api';
 import { DashboardStats, Bill } from '../types';
 import { FileText, DollarSign, Users, PlusCircle, Eye, ArrowUpRight, Package } from 'lucide-react';
 import { formatBillNo } from '../utils/format';
@@ -27,6 +27,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNewBill, onViewBill, onV
       console.error('Failed to load dashboard stats:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleViewBillClick = async (billId: number) => {
+    try {
+      const fullBill = await fetchBillById(billId);
+      onViewBill(fullBill);
+    } catch (err) {
+      console.error('Failed to load bill details:', err);
+      alert('Failed to load bill details');
     }
   };
 
@@ -173,7 +183,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNewBill, onViewBill, onV
                     </td>
                     <td className="px-6 py-4 text-center">
                       <button
-                        onClick={() => onViewBill(bill)}
+                        onClick={() => handleViewBillClick(bill.id!)}
                         className="inline-flex items-center space-x-1 text-xs bg-slate-100 hover:bg-indigo-50 text-slate-800 hover:text-indigo-700 font-bold px-3 py-1.5 rounded-lg border border-slate-200 transition-colors"
                       >
                         <Eye className="w-3.5 h-3.5" />

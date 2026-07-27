@@ -112,7 +112,7 @@ export const CustomerMaster: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      
+
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
         <div>
@@ -268,7 +268,7 @@ export const CustomerMaster: React.FC = () => {
                   type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="e.g. U.Vignesh Kumar"
+                  placeholder="e.g. Vignesh Kumar"
                   className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium uppercase focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
@@ -279,7 +279,7 @@ export const CustomerMaster: React.FC = () => {
                   type="text"
                   value={mobileNumber}
                   onChange={(e) => setMobileNumber(e.target.value)}
-                  placeholder="e.g. 98400 12345"
+                  placeholder="e.g. 12345 00000"
                   className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
