@@ -19,21 +19,38 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onQuick
 
   return (
     <header className="bg-slate-900 text-white shadow-md sticky top-0 z-40 border-b border-slate-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+      <div className="w-full max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-18 sm:h-20 gap-3 lg:gap-6">
           
-          {/* Logo & Garage Branding – single line */}
-          <div className="flex items-center space-x-3 cursor-pointer shrink-0" onClick={() => setActiveTab('dashboard')}>
-            <div className="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/30 shrink-0">
-              <Wrench className="w-6 h-6 text-white" />
+          {/* Left Section: Logo, Two-Line Title & Specialist Badge */}
+          <div 
+            className="flex items-center space-x-3 shrink-0 cursor-pointer select-none" 
+            onClick={() => setActiveTab('dashboard')}
+          >
+            {/* Garage Wrench Icon Box */}
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-indigo-600 flex items-center justify-center shadow-md shadow-indigo-600/30 shrink-0">
+              <Wrench className="w-5.5 h-5.5 text-white" />
             </div>
-            <span className="text-sm lg:text-base font-bold tracking-wide text-white whitespace-nowrap">
-              VICKY'S GARAGE – SPECIALIZED IN ROYAL ENFIELD – BILLING & MANAGEMENT SYSTEM
-            </span>
+
+            {/* Two-Line Title with Badge */}
+            <div className="flex flex-col justify-center">
+              <div className="flex items-center space-x-2">
+                <span className="text-base sm:text-lg font-extrabold tracking-wide text-white whitespace-nowrap">
+                  VICKY'S GARAGE
+                </span>
+                {/* Royal Enfield Specialist Badge */}
+                <span className="px-2.5 py-0.5 text-[10px] sm:text-[11px] font-semibold text-indigo-300 bg-indigo-950/80 rounded-full border border-indigo-700/60 whitespace-nowrap shadow-xs">
+                  Royal Enfield Specialist
+                </span>
+              </div>
+              <span className="text-xs text-slate-400 font-medium tracking-normal whitespace-nowrap">
+                Billing & Management System
+              </span>
+            </div>
           </div>
 
-          {/* Navigation Items */}
-          <nav className="hidden md:flex items-center space-x-1 shrink-0">
+          {/* Center Section: Navigation Menu */}
+          <nav className="hidden md:flex items-center space-x-1 lg:space-x-1.5 shrink-0">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -41,33 +58,33 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onQuick
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center space-x-1.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                  className={`flex items-center space-x-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                     isActive
                       ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon className="w-4 h-4 shrink-0" />
                   <span>{item.label}</span>
                 </button>
               );
             })}
           </nav>
 
-          {/* Quick Action Button */}
-          <div className="flex items-center space-x-3 shrink-0">
+          {/* Right Section: Primary Action Button */}
+          <div className="flex items-center shrink-0">
             <button
               onClick={onQuickNewBill}
-              className="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:shadow-lg transition-all whitespace-nowrap"
+              className="flex items-center space-x-1.5 bg-emerald-500 hover:bg-emerald-600 text-white px-3.5 sm:px-4 py-2 rounded-lg text-xs font-bold shadow-md hover:shadow-lg transition-all whitespace-nowrap"
             >
-              <PlusCircle className="w-4 h-4" />
+              <PlusCircle className="w-4 h-4 shrink-0" />
               <span>Create Bill</span>
             </button>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
-        <div className="md:hidden flex overflow-x-auto py-2 border-t border-slate-800 space-x-2">
+        {/* Mobile Navigation Bar */}
+        <div className="md:hidden flex overflow-x-auto py-2 border-t border-slate-800 space-x-2 scrollbar-none">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -75,7 +92,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onQuick
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap ${
+                className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap ${
                   isActive ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-800'
                 }`}
               >
