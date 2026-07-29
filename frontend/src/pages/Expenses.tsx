@@ -145,10 +145,10 @@ export const Expenses: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
           <button
             onClick={() => loadExpenses()}
-            className="flex items-center space-x-1.5 px-3 py-2 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors"
+            className="flex items-center justify-center space-x-1.5 px-3 py-2 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors w-full sm:w-auto"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Refresh</span>
@@ -156,7 +156,7 @@ export const Expenses: React.FC = () => {
           
           <button
             onClick={handleOpenAdd}
-            className="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors shadow-sm"
+            className="flex items-center justify-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors shadow-sm w-full sm:w-auto"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Record Expense</span>
@@ -217,19 +217,19 @@ export const Expenses: React.FC = () => {
         </div>
 
         {/* Filter buttons */}
-        <div className="md:col-span-4 flex flex-wrap gap-2 justify-end">
+        <div className="md:col-span-4 flex flex-col sm:flex-row flex-wrap gap-2 justify-end mt-2">
           {(search || startDate || endDate) && (
             <button
               type="button"
               onClick={handleClearFilters}
-              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-sm font-bold transition-colors"
+              className="w-full sm:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-sm font-bold transition-colors"
             >
               Clear Filters
             </button>
           )}
           <button
             type="submit"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-2 rounded-lg text-sm transition-colors shadow-sm flex items-center gap-2"
+            className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-2 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2"
           >
             <Search className="w-4 h-4" />
             <span>Apply Filters</span>
@@ -396,17 +396,17 @@ export const Expenses: React.FC = () => {
               </div>
 
               {/* Submit Buttons */}
-              <div className="flex justify-end space-x-2 pt-2">
+              <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsFormOpen(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold text-xs"
+                  className="w-full sm:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-xs shadow-sm"
+                  className="w-full sm:w-auto px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-xs shadow-sm"
                 >
                   Save Record
                 </button>
@@ -447,10 +447,10 @@ export const Expenses: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end pt-2">
+              <div className="flex flex-col sm:flex-row justify-end pt-2">
                 <button
                   onClick={() => setIsDetailsOpen(false)}
-                  className="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-bold text-xs"
+                  className="w-full sm:w-auto px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-bold text-xs"
                 >
                   Close
                 </button>

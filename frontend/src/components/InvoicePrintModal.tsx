@@ -50,7 +50,7 @@ export const InvoicePrintModal: React.FC<InvoicePrintModalProps> = ({ bill, onCl
       <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-slate-200">
 
         {/* Modal Header */}
-        <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+        <div className="px-6 py-4 bg-slate-900 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-800 gap-4">
           <div className="flex items-center space-x-3">
             <div className="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold">
               <FileText className="w-5 h-5" />
@@ -61,7 +61,7 @@ export const InvoicePrintModal: React.FC<InvoicePrintModalProps> = ({ bill, onCl
             </div>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-wrap items-center gap-2 sm:space-x-3 w-full sm:w-auto mt-2 sm:mt-0">
             {/* Print Button */}
             <button
               onClick={handlePrint}
@@ -92,7 +92,7 @@ export const InvoicePrintModal: React.FC<InvoicePrintModalProps> = ({ bill, onCl
         </div>
 
         {/* Printable Area Scroll View */}
-        <div className="flex-1 overflow-y-auto p-4 bg-slate-100 flex justify-center">
+        <div className="flex-1 overflow-auto p-4 bg-slate-100 min-w-0">
           <InvoiceDocument bill={bill} />
         </div>
 

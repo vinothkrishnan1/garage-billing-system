@@ -58,7 +58,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNewBill, onViewBill, onV
         </div>
         <button
           onClick={onNewBill}
-          className="flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold px-5 py-3 rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5"
+          className="flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold px-5 py-3 rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5 w-full sm:w-auto"
         >
           <PlusCircle className="w-5 h-5" />
           <span>Create New Bill</span>

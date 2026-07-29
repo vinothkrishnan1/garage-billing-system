@@ -300,11 +300,11 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
           <button
             type="button"
             onClick={handleReset}
-            className="flex items-center space-x-1.5 px-3 py-2 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors"
+            className="flex items-center justify-center space-x-1.5 px-3 py-2 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors w-full sm:w-auto"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Reset</span>
@@ -314,7 +314,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
             type="button"
             onClick={() => handleSaveBill(false)}
             disabled={loading}
-            className="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors shadow-sm disabled:opacity-50"
+            className="flex items-center justify-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors shadow-sm disabled:opacity-50 w-full sm:w-auto"
           >
             <Save className="w-4 h-4" />
             <span>{loading ? 'Saving...' : 'Save Bill'}</span>
@@ -324,7 +324,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
             type="button"
             onClick={() => handleSaveBill(true)}
             disabled={loading}
-            className="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors shadow-sm disabled:opacity-50"
+            className="flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors shadow-sm disabled:opacity-50 w-full sm:w-auto"
           >
             <Printer className="w-4 h-4" />
             <span>Save & Print</span>
@@ -445,7 +445,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
           </div>
 
           <div className="overflow-x-auto border border-slate-300 rounded-lg max-h-[500px]">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full min-w-[700px] text-left text-xs border-collapse">
               <thead className="bg-slate-800 text-white font-bold uppercase sticky top-0 z-20">
                 <tr>
                   <th className="w-12 px-3 py-2 text-center">S.No</th>

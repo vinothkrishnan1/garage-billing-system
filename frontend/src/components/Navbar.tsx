@@ -34,12 +34,12 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onQuick
 
             {/* Two-Line Title with Badge */}
             <div className="flex flex-col justify-center">
-              <div className="flex items-center space-x-2">
-                <span className="text-base sm:text-lg font-extrabold tracking-wide text-white whitespace-nowrap">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                <span className="text-sm sm:text-lg font-extrabold tracking-wide text-white whitespace-nowrap">
                   VICKY'S GARAGE
                 </span>
                 {/* Royal Enfield Specialist Badge */}
-                <span className="px-2.5 py-0.5 text-[10px] sm:text-[11px] font-semibold text-indigo-300 bg-indigo-950/80 rounded-full border border-indigo-700/60 whitespace-nowrap shadow-xs">
+                <span className="w-fit mt-1 sm:mt-0 px-2.5 py-0.5 text-[9px] sm:text-[11px] font-semibold text-indigo-300 bg-indigo-950/80 rounded-full border border-indigo-700/60 whitespace-nowrap shadow-xs">
                   Royal Enfield Specialist
                 </span>
               </div>
