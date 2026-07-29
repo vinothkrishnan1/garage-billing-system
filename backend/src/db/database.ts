@@ -2,22 +2,68 @@ import sqlite3 from 'sqlite3';
 import path from 'path';
 import fs from 'fs';
 
-const dbPath = path.resolve(__dirname, '../../garage_billing.db');
+// Helper function to log detailed SQLite / DB errors as required
+export function logSqlError(context: string, error: any) {
+  console.error(`--- SQLITE ERROR DETECTED (${context}) ---`);
+  console.error('Stack Trace:', error?.stack || error);
+  console.error('Database Path:', dbPath);
+  console.error('Current Working Directory:', process.cwd());
+  console.error('SQLite Error Code:', error?.code || 'N/A');
+  console.error('-------------------------------------------');
+}
 
-export const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('Error connecting to SQLite database:', err.message);
+const targetDir = process.cwd().endsWith('backend')
+  ? process.cwd()
+  : path.resolve(process.cwd(), 'backend');
+const dbPath = path.resolve(targetDir, 'garage_billing.db');
+
+// Ensure database directory exists
+if (!fs.existsSync(targetDir)) {
+  fs.mkdirSync(targetDir, { recursive: true });
+}
+
+// Check database file existence and write permissions
+const dbExists = fs.existsSync(dbPath);
+let dbWritable = false;
+
+try {
+  if (dbExists) {
+    fs.accessSync(dbPath, fs.constants.W_OK);
+    dbWritable = true;
   } else {
-    console.log('Connected to SQLite database at:', dbPath);
+    // Check if target directory is writable to create database file
+    fs.accessSync(targetDir, fs.constants.W_OK);
+    dbWritable = true;
+  }
+} catch (permErr: any) {
+  console.error(`Permission check failed for database at path: ${dbPath}`);
+  console.error(`Error details:`, permErr);
+  dbWritable = false;
+}
+
+console.log(`Database path: ${dbPath}`);
+console.log(`Database exists: ${dbExists}`);
+console.log(`Database writable: ${dbWritable}`);
+
+export const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
+  if (err) {
+    console.error('Failed to open database connection:', err.message);
+    logSqlError('Database Connection Open', err);
+  } else {
+    console.log('Connected successfully.');
   }
 });
 
-// Helper for promise-based db queries
+// Helper for promise-based db queries with detailed error logging
 export const dbRun = (sql: string, params: any[] = []): Promise<{ lastID: number; changes: number }> => {
   return new Promise((resolve, reject) => {
     db.run(sql, params, function (err) {
-      if (err) reject(err);
-      else resolve({ lastID: this.lastID, changes: this.changes });
+      if (err) {
+        logSqlError(`dbRun query: ${sql}`, err);
+        reject(err);
+      } else {
+        resolve({ lastID: this.lastID, changes: this.changes });
+      }
     });
   });
 };
@@ -25,8 +71,12 @@ export const dbRun = (sql: string, params: any[] = []): Promise<{ lastID: number
 export const dbGet = <T = any>(sql: string, params: any[] = []): Promise<T | undefined> => {
   return new Promise((resolve, reject) => {
     db.get(sql, params, (err, row) => {
-      if (err) reject(err);
-      else resolve(row as T);
+      if (err) {
+        logSqlError(`dbGet query: ${sql}`, err);
+        reject(err);
+      } else {
+        resolve(row as T);
+      }
     });
   });
 };
@@ -34,8 +84,12 @@ export const dbGet = <T = any>(sql: string, params: any[] = []): Promise<T | und
 export const dbAll = <T = any>(sql: string, params: any[] = []): Promise<T[]> => {
   return new Promise((resolve, reject) => {
     db.all(sql, params, (err, rows) => {
-      if (err) reject(err);
-      else resolve(rows as T[]);
+      if (err) {
+        logSqlError(`dbAll query: ${sql}`, err);
+        reject(err);
+      } else {
+        resolve(rows as T[]);
+      }
     });
   });
 };

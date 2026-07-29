@@ -220,7 +220,11 @@ const getDashboardStats = async (req, res) => {
         const todayRevenue = todayBills.reduce((acc, b) => acc + (b.total_amount || 0), 0);
         const custCountRow = await (0, database_1.dbGet)('SELECT COUNT(*) as count FROM customers');
         const prodCountRow = await (0, database_1.dbGet)('SELECT COUNT(*) as count FROM products');
-        const recentBills = await (0, database_1.dbAll)('SELECT * FROM bills WHERE bill_date = ? ORDER BY bill_no DESC', [today]);
+        const recentBillsRows = await (0, database_1.dbAll)('SELECT * FROM bills WHERE bill_date = ? ORDER BY bill_no DESC', [today]);
+        const recentBills = await Promise.all(recentBillsRows.map(async (b) => {
+            const items = await (0, database_1.dbAll)('SELECT * FROM bill_items WHERE bill_id = ? ORDER BY s_no ASC', [b.id]);
+            return { ...b, items };
+        }));
         const todayExpenses = await expenseController_1.expenseService.getTodayExpenses(today);
         res.json({
             success: true,

@@ -291,7 +291,13 @@ export const getDashboardStats = async (req: Request, res: Response) => {
 
     const custCountRow = await dbGet<{ count: number }>('SELECT COUNT(*) as count FROM customers');
     const prodCountRow = await dbGet<{ count: number }>('SELECT COUNT(*) as count FROM products');
-    const recentBills = await dbAll('SELECT * FROM bills WHERE bill_date = ? ORDER BY bill_no DESC', [today]);
+    const recentBillsRows = await dbAll('SELECT * FROM bills WHERE bill_date = ? ORDER BY bill_no DESC', [today]);
+    const recentBills = await Promise.all(
+      recentBillsRows.map(async (b) => {
+        const items = await dbAll('SELECT * FROM bill_items WHERE bill_id = ? ORDER BY s_no ASC', [b.id]);
+        return { ...b, items };
+      })
+    );
 
     const todayExpenses = await expenseService.getTodayExpenses(today);
 

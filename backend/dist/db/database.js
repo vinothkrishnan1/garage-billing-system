@@ -4,26 +4,70 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.dbAll = exports.dbGet = exports.dbRun = exports.db = void 0;
+exports.logSqlError = logSqlError;
 exports.initDatabase = initDatabase;
 const sqlite3_1 = __importDefault(require("sqlite3"));
 const path_1 = __importDefault(require("path"));
-const dbPath = path_1.default.resolve(__dirname, '../../garage_billing.db');
-exports.db = new sqlite3_1.default.Database(dbPath, (err) => {
-    if (err) {
-        console.error('Error connecting to SQLite database:', err.message);
+const fs_1 = __importDefault(require("fs"));
+// Helper function to log detailed SQLite / DB errors as required
+function logSqlError(context, error) {
+    console.error(`--- SQLITE ERROR DETECTED (${context}) ---`);
+    console.error('Stack Trace:', error?.stack || error);
+    console.error('Database Path:', dbPath);
+    console.error('Current Working Directory:', process.cwd());
+    console.error('SQLite Error Code:', error?.code || 'N/A');
+    console.error('-------------------------------------------');
+}
+const targetDir = process.cwd().endsWith('backend')
+    ? process.cwd()
+    : path_1.default.resolve(process.cwd(), 'backend');
+const dbPath = path_1.default.resolve(targetDir, 'garage_billing.db');
+// Ensure database directory exists
+if (!fs_1.default.existsSync(targetDir)) {
+    fs_1.default.mkdirSync(targetDir, { recursive: true });
+}
+// Check database file existence and write permissions
+const dbExists = fs_1.default.existsSync(dbPath);
+let dbWritable = false;
+try {
+    if (dbExists) {
+        fs_1.default.accessSync(dbPath, fs_1.default.constants.W_OK);
+        dbWritable = true;
     }
     else {
-        console.log('Connected to SQLite database at:', dbPath);
+        // Check if target directory is writable to create database file
+        fs_1.default.accessSync(targetDir, fs_1.default.constants.W_OK);
+        dbWritable = true;
+    }
+}
+catch (permErr) {
+    console.error(`Permission check failed for database at path: ${dbPath}`);
+    console.error(`Error details:`, permErr);
+    dbWritable = false;
+}
+console.log(`Database path: ${dbPath}`);
+console.log(`Database exists: ${dbExists}`);
+console.log(`Database writable: ${dbWritable}`);
+exports.db = new sqlite3_1.default.Database(dbPath, sqlite3_1.default.OPEN_READWRITE | sqlite3_1.default.OPEN_CREATE, (err) => {
+    if (err) {
+        console.error('Failed to open database connection:', err.message);
+        logSqlError('Database Connection Open', err);
+    }
+    else {
+        console.log('Connected successfully.');
     }
 });
-// Helper for promise-based db queries
+// Helper for promise-based db queries with detailed error logging
 const dbRun = (sql, params = []) => {
     return new Promise((resolve, reject) => {
         exports.db.run(sql, params, function (err) {
-            if (err)
+            if (err) {
+                logSqlError(`dbRun query: ${sql}`, err);
                 reject(err);
-            else
+            }
+            else {
                 resolve({ lastID: this.lastID, changes: this.changes });
+            }
         });
     });
 };
@@ -31,10 +75,13 @@ exports.dbRun = dbRun;
 const dbGet = (sql, params = []) => {
     return new Promise((resolve, reject) => {
         exports.db.get(sql, params, (err, row) => {
-            if (err)
+            if (err) {
+                logSqlError(`dbGet query: ${sql}`, err);
                 reject(err);
-            else
+            }
+            else {
                 resolve(row);
+            }
         });
     });
 };
@@ -42,10 +89,13 @@ exports.dbGet = dbGet;
 const dbAll = (sql, params = []) => {
     return new Promise((resolve, reject) => {
         exports.db.all(sql, params, (err, rows) => {
-            if (err)
+            if (err) {
+                logSqlError(`dbAll query: ${sql}`, err);
                 reject(err);
-            else
+            }
+            else {
                 resolve(rows);
+            }
         });
     });
 };
