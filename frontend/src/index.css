@@ -76,12 +76,17 @@
   line-height: 1.2;
 }
 
+.bill-table-grid tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
 .bill-table-grid td, .bill-table-grid th {
-  border-right: 1.5px solid #1e293b;
-  border-bottom: 1px solid #334155;
-  padding: 3px 6px;
+  border-right: 1.5px solid #1a237e;
+  border-bottom: 1px solid #1a237e;
 }
 
 .bill-table-grid tr td:last-child, .bill-table-grid tr th:last-child {
   border-right: none;
 }
+

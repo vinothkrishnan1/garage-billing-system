@@ -327,12 +327,14 @@ export const generatePdf = async (req: Request, res: Response) => {
 
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--font-render-hinting=none'],
     });
 
     const page = await browser.newPage();
     
-    // We construct a full HTML document including Google Fonts for Bookman Old Style alternative
+    // Set viewport to exact A4 size at standard 96 DPI (794px x 1123px)
+    await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 2 });
+
     const fullHtml = `
       <!DOCTYPE html>
       <html>
@@ -340,18 +342,40 @@ export const generatePdf = async (req: Request, res: Response) => {
           <meta charset="UTF-8">
           <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
           <style>
-            @page { margin: 0; }
-            body { 
+            @page {
+              size: A4 portrait;
+              margin: 10mm 8mm 10mm 8mm;
+            }
+            * {
+              box-sizing: border-box;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            html, body { 
               margin: 0; 
               padding: 0; 
-              background-color: white; 
+              background-color: white;
+              width: 100%;
+              height: 100%;
             }
-            .font-text { font-family: 'Bookman Old Style', 'Bookman', 'Lora', Georgia, serif !important; }
+            .invoice-document {
+              margin: 0 auto !important;
+              border: 2px solid #1a237e !important;
+              box-shadow: none !important;
+            }
+            .font-text { font-family: 'Bookman Old Style', 'Bookman', 'URW Bookman L', 'Lora', Georgia, serif !important; }
             .font-numeric { font-family: 'Arial', sans-serif !important; }
-            * { box-sizing: border-box; }
+            .bill-table-grid td, .bill-table-grid th {
+              border-right: 1.5px solid #1a237e !important;
+              border-bottom: 1px solid #1a237e !important;
+              padding: 4px 6px !important;
+            }
+            .bill-table-grid tr td:last-child, .bill-table-grid tr th:last-child {
+              border-right: none !important;
+            }
           </style>
         </head>
-        <body>
+        <body style="display: flex; justify-content: center; align-items: flex-start;">
           ${html}
         </body>
       </html>
@@ -362,14 +386,19 @@ export const generatePdf = async (req: Request, res: Response) => {
     const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
-      margin: { top: '0', right: '0', bottom: '0', left: '0' }
+      preferCSSPageSize: true,
+      margin: {
+        top: '10mm',
+        right: '8mm',
+        bottom: '10mm',
+        left: '8mm'
+      }
     });
 
     await browser.close();
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename=invoice.pdf');
-    // Using Buffer.from to send buffer data as express natively handles it
     res.send(Buffer.from(pdfBuffer));
   } catch (error: any) {
     console.error('PDF Generation Error:', error);

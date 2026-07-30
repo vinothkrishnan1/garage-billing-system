@@ -12,7 +12,7 @@ interface BillHistoryProps {
 export const BillHistory: React.FC<BillHistoryProps> = ({ onEditBill }) => {
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Filters
   const [search, setSearch] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -71,7 +71,7 @@ export const BillHistory: React.FC<BillHistoryProps> = ({ onEditBill }) => {
 
   return (
     <div className="space-y-6">
-      
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
         <div>
@@ -92,7 +92,7 @@ export const BillHistory: React.FC<BillHistoryProps> = ({ onEditBill }) => {
 
       {/* Filter Bar */}
       <form onSubmit={handleSearchSubmit} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        
+
         {/* Search Input */}
         <div>
           <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Search</label>
@@ -192,7 +192,7 @@ export const BillHistory: React.FC<BillHistoryProps> = ({ onEditBill }) => {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center space-x-1">
-                        
+
                         {/* View & Print Modal */}
                         <button
                           onClick={() => handleOpenPrintModal(bill.id!)}

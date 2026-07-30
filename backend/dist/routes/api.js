@@ -25,6 +25,7 @@ router.get('/bills/next-no', billController_1.getNextBillNo);
 router.get('/bills', billController_1.getBills);
 router.get('/bills/:id', billController_1.getBillById);
 router.post('/bills', billController_1.createBill);
+router.post('/bills/generate-pdf', billController_1.generatePdf);
 router.put('/bills/:id', billController_1.updateBill);
 router.delete('/bills/:id', billController_1.deleteBill);
 // Expenses
