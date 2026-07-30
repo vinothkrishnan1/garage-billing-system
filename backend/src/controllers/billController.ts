@@ -357,7 +357,7 @@ export const generatePdf = async (req: Request, res: Response) => {
       </html>
     `;
 
-    await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
+    await page.setContent(fullHtml, { waitUntil: 'load' });
 
     const pdfBuffer = await page.pdf({
       format: 'A4',

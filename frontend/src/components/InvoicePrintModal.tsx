@@ -3,8 +3,7 @@ import { X, Printer, Download, FileText } from 'lucide-react';
 import { Bill } from '../types';
 import { InvoiceDocument } from './InvoiceDocument';
 import { formatBillNo } from '../utils/format';
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
+import { generateInvoicePdf } from '../services/api';
 
 interface InvoicePrintModalProps {
   bill: Bill;
@@ -22,21 +21,23 @@ export const InvoicePrintModal: React.FC<InvoicePrintModalProps> = ({ bill, onCl
     try {
       setIsExporting(true);
       const element = document.getElementById('printable-invoice');
-      if (!element) return;
+      if (!element) {
+        alert('Invoice element not found. Please try again.');
+        return;
+      }
 
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false
-      });
+      const html = element.outerHTML;
+      const blob = await generateInvoicePdf(html);
 
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Invoice_Bill_${formatBillNo(bill.bill_no)}_${bill.vehicle_number.replace(/\s+/g, '_')}.pdf`);
+      // Create a download link and trigger it
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Invoice_Bill_${formatBillNo(bill.bill_no)}_${bill.vehicle_number.replace(/\s+/g, '_')}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error('PDF export error:', err);
       alert('Failed to generate PDF. You can also use the Print button to Save as PDF.');

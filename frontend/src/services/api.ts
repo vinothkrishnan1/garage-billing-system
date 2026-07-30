@@ -125,3 +125,11 @@ export const fetchServerDate = async (): Promise<string> => {
   const res = await api.get('/server-date');
   return res.data.date;
 };
+
+// PDF Generation
+export const generateInvoicePdf = async (html: string): Promise<Blob> => {
+  const res = await api.post('/bills/generate-pdf', { html }, {
+    responseType: 'blob',
+  });
+  return res.data;
+};

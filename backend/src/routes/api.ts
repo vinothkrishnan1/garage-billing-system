@@ -20,7 +20,8 @@ import {
   createBill,
   updateBill,
   deleteBill,
-  getDashboardStats
+  getDashboardStats,
+  generatePdf
 } from '../controllers/billController';
 import {
   getExpenses,
@@ -55,6 +56,7 @@ router.get('/bills/next-no', getNextBillNo);
 router.get('/bills', getBills);
 router.get('/bills/:id', getBillById);
 router.post('/bills', createBill);
+router.post('/bills/generate-pdf', generatePdf);
 router.put('/bills/:id', updateBill);
 router.delete('/bills/:id', deleteBill);
 
