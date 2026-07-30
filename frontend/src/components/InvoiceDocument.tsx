@@ -23,25 +23,34 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ bill }) => {
   const displayRowsCount = isSinglePageMode ? 30 : itemCount;
   const displayRows = Array.from({ length: displayRowsCount });
 
-  // Intelligent scaling configuration based on item count for <= 30 items
-  let rowHeight = '20px';
-  let fontBaseSize = '13px';
-  let fontHeadingSize = '32px';
-  let cellPadding = '0 6px';
-  let headerPadding = '4px 6px';
+  // Scaled font sizes and spacing (approx 2 points reduced across all sections for guaranteed 1-page fit)
+  let rowHeight = '17.5px';
+  let fontBaseSize = '11px';
+  let fontHeadingSize = '28px';
+  let fontContactSize = '10.5px';
+  let fontNoSize = '10.5px';
+  let cellPadding = '0 4px';
+  let headerPadding = '3px 5px';
+  let sectionPadding = '3px 5px';
 
   if (itemCount > 25 && itemCount <= 30) {
-    rowHeight = '18px';
-    fontBaseSize = '12px';
+    rowHeight = '16.5px';
+    fontBaseSize = '10.5px';
+    fontHeadingSize = '26px';
+    fontContactSize = '10px';
+    fontNoSize = '10px';
+    cellPadding = '0 3px';
+    headerPadding = '2px 4px';
+    sectionPadding = '2px 4px';
+  } else if (itemCount <= 15) {
+    rowHeight = '18.5px';
+    fontBaseSize = '11.5px';
     fontHeadingSize = '30px';
-    cellPadding = '0 4px';
-    headerPadding = '3px 6px';
-  } else if (itemCount <= 20) {
-    rowHeight = '21px';
-    fontBaseSize = '13.5px';
-    fontHeadingSize = '34px';
-    cellPadding = '0 8px';
-    headerPadding = '5px 8px';
+    fontContactSize = '11px';
+    fontNoSize = '11px';
+    cellPadding = '0 5px';
+    headerPadding = '4px 6px';
+    sectionPadding = '3px 6px';
   }
 
   const formatAmount = (amt: number | '' | undefined) => {
@@ -91,13 +100,13 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ bill }) => {
         boxSizing: 'border-box',
         margin: '0 auto',
         backgroundColor: '#ffffff',
-        padding: '3mm 4mm',
+        padding: '2.5mm 3.5mm',
         border: '2px solid #1a237e',
         position: 'relative',
         overflow: 'hidden',
         fontFamily: FONT_TEXT,
         color: '#1a237e',
-        lineHeight: 1.25,
+        lineHeight: 1.2,
         fontSize: fontBaseSize,
       }}
     >
@@ -111,11 +120,11 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ bill }) => {
           style={{
             textAlign: 'center',
             fontWeight: 'bold',
-            fontSize: '14px',
-            letterSpacing: '3px',
+            fontSize: '12px',
+            letterSpacing: '2px',
             textTransform: 'uppercase',
             borderBottom: '1.5px solid #1a237e',
-            paddingBottom: '2px',
+            paddingBottom: '1px',
             fontFamily: FONT_TEXT,
           }}
         >
@@ -125,7 +134,7 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ bill }) => {
         {/* Main Header Banner */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '2.5fr 7fr 2.5fr',
+          gridTemplateColumns: '2.8fr 6.4fr 2.8fr',
           borderBottom: '2px solid #1a237e',
           alignItems: 'center',
         }}>
@@ -135,8 +144,8 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ bill }) => {
             padding: headerPadding,
             textAlign: 'left',
           }}>
-            <span className="font-text" style={{ fontSize: fontBaseSize, fontWeight: 'bold', display: 'block', fontFamily: FONT_TEXT }}>BILL</span>
-            <span className="font-text" style={{ fontSize: '12px', fontWeight: 900, fontFamily: FONT_TEXT }}>
+            <span className="font-text" style={{ fontSize: fontNoSize, fontWeight: 'bold', display: 'block', fontFamily: FONT_TEXT }}>BILL</span>
+            <span className="font-text" style={{ fontSize: '15px', fontWeight: 900, fontFamily: FONT_TEXT }}>
               No: <span className="font-numeric" style={{ fontFamily: FONT_NUMERIC }}>{formatBillNo(bill.bill_no)}</span>
             </span>
           </div>
@@ -146,7 +155,7 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ bill }) => {
             <h1 className="font-text" style={{
               fontSize: fontHeadingSize,
               fontWeight: 900,
-              letterSpacing: '2px',
+              letterSpacing: '1.5px',
               textTransform: 'uppercase',
               margin: 0,
               fontFamily: FONT_TEXT,
@@ -154,11 +163,12 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ bill }) => {
               VICKY'S GARAGE
             </h1>
             <p className="font-text" style={{
-              fontSize: '12px',
+              fontSize: '10.5px',
               fontWeight: 'bold',
               fontStyle: 'italic',
-              letterSpacing: '1px',
+              letterSpacing: '0.5px',
               marginTop: '1px',
+              margin: 0,
               fontFamily: FONT_TEXT,
             }}>
               Specialized in Royal Enfield
@@ -171,9 +181,9 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ bill }) => {
             padding: headerPadding,
             textAlign: 'right',
           }}>
-            <p className="font-text" style={{ fontSize: fontBaseSize, fontWeight: 'bold', margin: '0 0 2px 0', fontFamily: FONT_TEXT }}>U.Vignesh Kumar</p>
-            <p className="font-text" style={{ fontSize: fontBaseSize, fontWeight: 'bold', margin: 0, fontFamily: FONT_TEXT }}>
-              📞 <span className="font-numeric" style={{ fontFamily: FONT_NUMERIC }}>+91 99417 49495</span>
+            <p className="font-text" style={{ fontSize: fontContactSize, fontWeight: 'bold', margin: '0 0 1px 0', fontFamily: FONT_TEXT, whiteSpace: 'nowrap' }}>U.Vignesh Kumar</p>
+            <p className="font-text" style={{ fontSize: fontContactSize, fontWeight: 'bold', margin: 0, fontFamily: FONT_TEXT, whiteSpace: 'nowrap' }}>
+              📞 <span className="font-numeric" style={{ fontFamily: FONT_NUMERIC, whiteSpace: 'nowrap' }}>+91 99417 49495</span>
             </p>
           </div>
         </div>
@@ -181,9 +191,9 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ bill }) => {
         {/* Address Line */}
         <div className="font-text" style={{
           borderBottom: '2px solid #1a237e',
-          padding: '3px 0',
+          padding: '2px 0',
           textAlign: 'center',
-          fontSize: '11.5px',
+          fontSize: '10px',
           fontWeight: 'bold',
           textTransform: 'uppercase',
           fontFamily: FONT_TEXT,
@@ -203,41 +213,41 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ bill }) => {
           <div style={{
             borderRight: '2px solid #1a237e',
             borderBottom: '1px solid #1a237e',
-            padding: '4px 6px',
+            padding: sectionPadding,
             display: 'flex',
             alignItems: 'center',
           }}>
-            <span className="font-text" style={{ width: '80px', fontWeight: 'bold', flexShrink: 0, fontFamily: FONT_TEXT }}>To:</span>
-            <span className="font-text" style={{ fontWeight: 900, fontSize: '14px', textTransform: 'uppercase', fontFamily: FONT_TEXT }}>{toName}</span>
+            <span className="font-text" style={{ width: '70px', fontWeight: 'bold', flexShrink: 0, fontFamily: FONT_TEXT }}>To:</span>
+            <span className="font-text" style={{ fontWeight: 900, fontSize: '12px', textTransform: 'uppercase', fontFamily: FONT_TEXT }}>{toName}</span>
           </div>
           <div style={{
             borderBottom: '1px solid #1a237e',
-            padding: '4px 6px',
+            padding: sectionPadding,
             display: 'flex',
             alignItems: 'center',
           }}>
-            <span className="font-text" style={{ width: '50px', fontWeight: 'bold', flexShrink: 0, fontFamily: FONT_TEXT }}>Date:</span>
+            <span className="font-text" style={{ width: '45px', fontWeight: 'bold', flexShrink: 0, fontFamily: FONT_TEXT }}>Date:</span>
             <span className="font-numeric" style={{ fontWeight: 900, fontFamily: FONT_NUMERIC }}>{formatDate(bill.bill_date)}</span>
           </div>
 
           {/* Row 2: Vehicle No & KM */}
           <div style={{
             borderRight: '2px solid #1a237e',
-            padding: '4px 6px',
+            padding: sectionPadding,
             display: 'flex',
             alignItems: 'center',
           }}>
-            <span className="font-text" style={{ width: '80px', fontWeight: 'bold', flexShrink: 0, fontFamily: FONT_TEXT }}>Vehicle No:</span>
-            <span className="font-numeric" style={{ fontWeight: 900, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', fontFamily: FONT_NUMERIC }}>
+            <span className="font-text" style={{ width: '70px', fontWeight: 'bold', flexShrink: 0, fontFamily: FONT_TEXT }}>Vehicle No:</span>
+            <span className="font-numeric" style={{ fontWeight: 900, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: FONT_NUMERIC }}>
               {bill.vehicle_number}
             </span>
           </div>
           <div style={{
-            padding: '4px 6px',
+            padding: sectionPadding,
             display: 'flex',
             alignItems: 'center',
           }}>
-            <span className="font-text" style={{ width: '50px', fontWeight: 'bold', flexShrink: 0, fontFamily: FONT_TEXT }}>KM:</span>
+            <span className="font-text" style={{ width: '45px', fontWeight: 'bold', flexShrink: 0, fontFamily: FONT_TEXT }}>KM:</span>
             <span className="font-numeric" style={{ fontWeight: 900, fontFamily: FONT_NUMERIC }}>{bill.km_driven !== '' ? bill.km_driven : '-'}</span>
           </div>
         </div>
@@ -258,13 +268,13 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ bill }) => {
               fontSize: fontBaseSize,
               fontFamily: FONT_TEXT,
             }}>
-              <th className="font-text" style={{ width: '42px', padding: '4px 2px', fontFamily: FONT_TEXT }}>S.No</th>
-              <th className="font-text" style={{ padding: '4px 6px', textAlign: 'center', fontFamily: FONT_TEXT }}>PARTICULAR</th>
-              <th className="font-text" style={{ width: '50px', padding: '4px 2px', fontFamily: FONT_TEXT }}>QTY</th>
-              <th className="font-text" style={{ width: '145px', padding: '0', fontFamily: FONT_TEXT }}>
+              <th className="font-text" style={{ width: '38px', padding: '3px 2px', fontFamily: FONT_TEXT }}>S.No</th>
+              <th className="font-text" style={{ padding: '3px 4px', textAlign: 'center', fontFamily: FONT_TEXT }}>PARTICULAR</th>
+              <th className="font-text" style={{ width: '45px', padding: '3px 2px', fontFamily: FONT_TEXT }}>QTY</th>
+              <th className="font-text" style={{ width: '135px', padding: '0', fontFamily: FONT_TEXT }}>
                 <div className="font-text" style={{ borderBottom: '1px solid #1a237e', padding: '2px 4px', fontFamily: FONT_TEXT }}>AMOUNT</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', fontSize: '11px', fontWeight: 'bold', padding: '2px 4px', fontFamily: FONT_TEXT }}>
-                  <span className="font-text" style={{ textAlign: 'right', paddingRight: '6px', fontFamily: FONT_TEXT }}>Rs.</span>
+                <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', fontSize: '10px', fontWeight: 'bold', padding: '1px 4px', fontFamily: FONT_TEXT }}>
+                  <span className="font-text" style={{ textAlign: 'right', paddingRight: '4px', fontFamily: FONT_TEXT }}>Rs.</span>
                   <span className="font-text" style={{ textAlign: 'center', fontFamily: FONT_TEXT }}>Ps.</span>
                 </div>
               </th>
@@ -298,7 +308,7 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ bill }) => {
                   </td>
                   <td style={{ verticalAlign: 'middle', padding: 0 }}>
                     <div className="font-numeric" style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', fontWeight: 'bold', fontSize: fontBaseSize, height: '100%', alignItems: 'center', fontFamily: FONT_NUMERIC }}>
-                      <span className="font-numeric" style={{ textAlign: 'right', paddingRight: '6px', fontFamily: FONT_NUMERIC }}>{rsPs.rs}</span>
+                      <span className="font-numeric" style={{ textAlign: 'right', paddingRight: '4px', fontFamily: FONT_NUMERIC }}>{rsPs.rs}</span>
                       <span className="font-numeric" style={{ textAlign: 'center', borderLeft: '1px solid #94a3b8', fontFamily: FONT_NUMERIC }}>{rsPs.ps}</span>
                     </div>
                   </td>
@@ -318,27 +328,27 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ bill }) => {
         }}>
           {/* Left: Labels (Bookman Old Style) */}
           <div className="font-text" style={{ borderRight: '2px solid #1a237e', fontFamily: FONT_TEXT }}>
-            <div className="font-text" style={{ borderBottom: '1px solid #1a237e', padding: '4px 6px', textTransform: 'uppercase', fontWeight: 900 }}>
+            <div className="font-text" style={{ borderBottom: '1px solid #1a237e', padding: '3px 5px', textTransform: 'uppercase', fontWeight: 900 }}>
               TOTAL
             </div>
-            <div className="font-text" style={{ borderBottom: '1px solid #1a237e', padding: '4px 6px', textTransform: 'uppercase', fontWeight: 900 }}>
+            <div className="font-text" style={{ borderBottom: '1px solid #1a237e', padding: '3px 5px', textTransform: 'uppercase', fontWeight: 900 }}>
               ADVANCE
             </div>
-            <div className="font-text" style={{ padding: '4px 6px', textTransform: 'uppercase', fontWeight: 900 }}>
+            <div className="font-text" style={{ padding: '3px 5px', textTransform: 'uppercase', fontWeight: 900 }}>
               BALANCE
             </div>
           </div>
 
           {/* Right: Amounts (Arial, Bold) */}
           <div className="font-numeric" style={{ fontFamily: FONT_NUMERIC }}>
-            <div className="font-numeric" style={{ borderBottom: '1px solid #1a237e', padding: '4px 6px', textAlign: 'right', fontWeight: 900, fontSize: fontBaseSize, fontFamily: FONT_NUMERIC }}>
-              {totalRsPs.rs}{totalRsPs.ps && <span className="font-numeric" style={{ fontSize: '11px', fontFamily: FONT_NUMERIC }}>.{totalRsPs.ps}</span>}
+            <div className="font-numeric" style={{ borderBottom: '1px solid #1a237e', padding: '3px 5px', textAlign: 'right', fontWeight: 900, fontSize: fontBaseSize, fontFamily: FONT_NUMERIC }}>
+              {totalRsPs.rs}{totalRsPs.ps && <span className="font-numeric" style={{ fontSize: '9.5px', fontFamily: FONT_NUMERIC }}>.{totalRsPs.ps}</span>}
             </div>
-            <div className="font-numeric" style={{ borderBottom: '1px solid #1a237e', padding: '4px 6px', textAlign: 'right', fontWeight: 900, fontSize: fontBaseSize, fontFamily: FONT_NUMERIC }}>
+            <div className="font-numeric" style={{ borderBottom: '1px solid #1a237e', padding: '3px 5px', textAlign: 'right', fontWeight: 900, fontSize: fontBaseSize, fontFamily: FONT_NUMERIC }}>
               {advanceRsPs.rs ? `${advanceRsPs.rs}.${advanceRsPs.ps}` : '-'}
             </div>
-            <div className="font-numeric" style={{ padding: '4px 6px', textAlign: 'right', fontWeight: 900, fontSize: fontBaseSize, fontFamily: FONT_NUMERIC }}>
-              {balanceRsPs.rs}{balanceRsPs.ps && <span className="font-numeric" style={{ fontSize: '11px', fontFamily: FONT_NUMERIC }}>.{balanceRsPs.ps}</span>}
+            <div className="font-numeric" style={{ padding: '3px 5px', textAlign: 'right', fontWeight: 900, fontSize: fontBaseSize, fontFamily: FONT_NUMERIC }}>
+              {balanceRsPs.rs}{balanceRsPs.ps && <span className="font-numeric" style={{ fontSize: '9.5px', fontFamily: FONT_NUMERIC }}>.{balanceRsPs.ps}</span>}
             </div>
           </div>
         </div>
@@ -347,17 +357,17 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ bill }) => {
         <div style={{
           display: 'grid',
           gridTemplateColumns: '7fr 5fr',
-          minHeight: '65px',
+          minHeight: '55px',
           fontSize: fontBaseSize,
         }}>
           {/* Complaint Box */}
-          <div style={{ borderRight: '2px solid #1a237e', padding: '5px 6px' }}>
+          <div style={{ borderRight: '2px solid #1a237e', padding: '4px 5px' }}>
             <span className="font-text" style={{
               fontWeight: 900,
               textTransform: 'uppercase',
               display: 'block',
               marginBottom: '2px',
-              fontSize: '12px',
+              fontSize: '10.5px',
               fontFamily: FONT_TEXT,
             }}>
               COMPLAINT
@@ -366,7 +376,7 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ bill }) => {
               fontSize: fontBaseSize,
               fontWeight: 'normal',
               whiteSpace: 'pre-wrap',
-              lineHeight: 1.3,
+              lineHeight: 1.2,
               margin: 0,
               fontFamily: FONT_TEXT,
             }}>
@@ -376,7 +386,7 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ bill }) => {
 
           {/* Garage Signature Line */}
           <div style={{
-            padding: '5px 6px',
+            padding: '4px 5px',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'flex-end',
@@ -386,7 +396,7 @@ export const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ bill }) => {
               fontWeight: 900,
               textTransform: 'uppercase',
               fontSize: fontBaseSize,
-              letterSpacing: '1px',
+              letterSpacing: '0.5px',
               fontFamily: FONT_TEXT,
             }}>
               For VICKY'S GARAGE

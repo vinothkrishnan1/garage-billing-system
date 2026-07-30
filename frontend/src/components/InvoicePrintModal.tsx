@@ -33,7 +33,8 @@ export const InvoicePrintModal: React.FC<InvoicePrintModalProps> = ({ bill, onCl
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `Invoice_Bill_${formatBillNo(bill.bill_no)}_${bill.vehicle_number.replace(/\s+/g, '_')}.pdf`;
+      // link.download = `Bill_${formatBillNo(bill.bill_no)}_${bill.vehicle_number.replace(/\s+/g, '_')}.pdf`;
+      link.download = `Bill_${bill.vehicle_number.replace(/\s+/g, '_')}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
