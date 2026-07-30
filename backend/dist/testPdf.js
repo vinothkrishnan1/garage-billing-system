@@ -1,12 +1,12 @@
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+  return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const http_1 = __importDefault(require("http"));
 async function testPdfExport() {
-    console.log('Testing PDF export endpoint...');
-    const sampleHtml = `
+  console.log('Testing PDF export endpoint...');
+  const sampleHtml = `
     <div id="printable-invoice" class="invoice-document font-text" style="width: 190mm; max-width: 190mm; margin: 0 auto; background-color: #ffffff; padding: 3mm 4mm; border: 2px solid #1a237e; box-sizing: border-box; font-family: 'Bookman Old Style', serif; color: #1a237e; font-size: 14px;">
       <div style="text-align: center; font-weight: bold; font-size: 15px; border-bottom: 1.5px solid #1a237e; padding-bottom: 2px;">BILL</div>
       <div style="display: grid; grid-template-columns: 2.5fr 7fr 2.5fr; border-bottom: 2px solid #1a237e; align-items: center;">
@@ -34,36 +34,36 @@ async function testPdfExport() {
       </div>
     </div>
   `;
-    const data = JSON.stringify({ html: sampleHtml });
-    const req = http_1.default.request({
-        hostname: 'localhost',
-        port: 5000,
-        path: '/api/bills/generate-pdf',
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(data)
-        }
-    }, (res) => {
-        console.log(`STATUS: ${res.statusCode}`);
-        console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
-        const chunks = [];
-        res.on('data', (chunk) => chunks.push(chunk));
-        res.on('end', () => {
-            const pdfBuffer = Buffer.concat(chunks);
-            console.log(`PDF Generated successfully! Size: ${pdfBuffer.length} bytes`);
-            if (pdfBuffer.length > 5000 && pdfBuffer.toString('utf8', 0, 5) === '%PDF-') {
-                console.log('PDF Header Valid (%PDF-)');
-            }
-            else {
-                console.error('PDF Generation check failed, invalid header/buffer size.');
-            }
-        });
+  const data = JSON.stringify({ html: sampleHtml });
+  const req = http_1.default.request({
+    hostname: 'localhost',
+    port: 5000,
+    path: '/api/bills/generate-pdf',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(data)
+    }
+  }, (res) => {
+    console.log(`STATUS: ${res.statusCode}`);
+    console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
+    const chunks = [];
+    res.on('data', (chunk) => chunks.push(chunk));
+    res.on('end', () => {
+      const pdfBuffer = Buffer.concat(chunks);
+      console.log(`PDF Generated successfully! Size: ${pdfBuffer.length} bytes`);
+      if (pdfBuffer.length > 5000 && pdfBuffer.toString('utf8', 0, 5) === '%PDF-') {
+        console.log('PDF Header Valid (%PDF-)');
+      }
+      else {
+        console.error('PDF Generation check failed, invalid header/buffer size.');
+      }
     });
-    req.on('error', (e) => {
-        console.error(`Problem with request: ${e.message}`);
-    });
-    req.write(data);
-    req.end();
+  });
+  req.on('error', (e) => {
+    console.error(`Problem with request: ${e.message}`);
+  });
+  req.write(data);
+  req.end();
 }
 testPdfExport();
