@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { dbAll, dbGet, dbRun } from '../db/database';
 import { expenseService } from './expenseController';
+import puppeteer from 'puppeteer';
 
 export const getNextBillNo = async (req: Request, res: Response) => {
   try {
@@ -314,5 +315,64 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const generatePdf = async (req: Request, res: Response) => {
+  try {
+    const { html } = req.body;
+    if (!html) {
+      return res.status(400).json({ success: false, message: 'HTML content is required' });
+    }
+
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+
+    const page = await browser.newPage();
+    
+    // We construct a full HTML document including Google Fonts for Bookman Old Style alternative
+    const fullHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+          <style>
+            @page { margin: 0; }
+            body { 
+              margin: 0; 
+              padding: 0; 
+              background-color: white; 
+            }
+            .font-text { font-family: 'Bookman Old Style', 'Bookman', 'Lora', Georgia, serif !important; }
+            .font-numeric { font-family: 'Arial', sans-serif !important; }
+            * { box-sizing: border-box; }
+          </style>
+        </head>
+        <body>
+          ${html}
+        </body>
+      </html>
+    `;
+
+    await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
+
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '0', right: '0', bottom: '0', left: '0' }
+    });
+
+    await browser.close();
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=invoice.pdf');
+    // Using Buffer.from to send buffer data as express natively handles it
+    res.send(Buffer.from(pdfBuffer));
+  } catch (error: any) {
+    console.error('PDF Generation Error:', error);
+    res.status(500).json({ success: false, message: 'Failed to generate PDF' });
   }
 };

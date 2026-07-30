@@ -1,5 +1,5 @@
 import React from 'react';
-import watermarkImage from './watermark.png';
+import { watermarkBase64 } from './watermarkBase64';
 
 export const WatermarkLogo: React.FC = () => {
   return (
@@ -20,7 +20,7 @@ export const WatermarkLogo: React.FC = () => {
       }}
     >
       <img
-        src={watermarkImage}
+        src={watermarkBase64}
         alt="Watermark Logo"
         style={{
           width: '450px',
