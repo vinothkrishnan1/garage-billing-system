@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { dbAll, dbGet, dbRun } from '../db/database';
 import { expenseService } from './expenseController';
 import puppeteer from 'puppeteer';
+import chromium from '@sparticuz/chromium';
 
 export const getNextBillNo = async (req: Request, res: Response) => {
   try {
@@ -325,9 +326,20 @@ export const generatePdf = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: 'HTML content is required' });
     }
 
+    let executablePath: string | undefined = undefined;
+    try {
+      if (process.env.NODE_ENV === 'production' || process.env.RENDER) {
+        executablePath = await chromium.executablePath();
+      }
+    } catch (err) {
+      console.log('Falling back to default local Chromium executable path:', err);
+    }
+
     const browser = await puppeteer.launch({
       headless: true,
+      executablePath,
       args: [
+        ...chromium.args,
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
