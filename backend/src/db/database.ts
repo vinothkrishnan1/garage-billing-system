@@ -1,4 +1,5 @@
 import sqlite3 from 'sqlite3';
+import { createClient } from '@libsql/client';
 import path from 'path';
 import fs from 'fs';
 
@@ -45,53 +46,95 @@ console.log(`Database path: ${dbPath}`);
 console.log(`Database exists: ${dbExists}`);
 console.log(`Database writable: ${dbWritable}`);
 
-export const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
-  if (err) {
-    console.error('Failed to open database connection:', err.message);
-    logSqlError('Database Connection Open', err);
-  } else {
-    console.log('Connected successfully.');
-  }
-});
+const isTurso = !!process.env.TURSO_DATABASE_URL;
+export let libsqlClient: any = null;
+export let db: any = null;
+
+if (isTurso) {
+  console.log(`Connecting to Turso Cloud Database at: ${process.env.TURSO_DATABASE_URL}`);
+  libsqlClient = createClient({
+    url: process.env.TURSO_DATABASE_URL!,
+    authToken: process.env.TURSO_AUTH_TOKEN || undefined
+  });
+} else {
+  db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
+    if (err) {
+      console.error('Failed to open database connection:', err.message);
+      logSqlError('Database Connection Open', err);
+    } else {
+      console.log('Connected successfully to local SQLite database.');
+    }
+  });
+}
 
 // Helper for promise-based db queries with detailed error logging
-export const dbRun = (sql: string, params: any[] = []): Promise<{ lastID: number; changes: number }> => {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function (err) {
-      if (err) {
-        logSqlError(`dbRun query: ${sql}`, err);
-        reject(err);
-      } else {
-        resolve({ lastID: this.lastID, changes: this.changes });
-      }
+export const dbRun = async (sql: string, params: any[] = []): Promise<{ lastID: number; changes: number }> => {
+  if (isTurso) {
+    try {
+      const res = await libsqlClient.execute({ sql, args: params });
+      return { lastID: Number(res.lastInsertRowid || 0), changes: res.rowsAffected };
+    } catch (err: any) {
+      logSqlError(`Turso dbRun query: ${sql}`, err);
+      throw err;
+    }
+  } else {
+    return new Promise((resolve, reject) => {
+      db.run(sql, params, function (this: any, err: any) {
+        if (err) {
+          logSqlError(`dbRun query: ${sql}`, err);
+          reject(err);
+        } else {
+          resolve({ lastID: this.lastID, changes: this.changes });
+        }
+      });
     });
-  });
+  }
 };
 
-export const dbGet = <T = any>(sql: string, params: any[] = []): Promise<T | undefined> => {
-  return new Promise((resolve, reject) => {
-    db.get(sql, params, (err, row) => {
-      if (err) {
-        logSqlError(`dbGet query: ${sql}`, err);
-        reject(err);
-      } else {
-        resolve(row as T);
-      }
+export const dbGet = async <T = any>(sql: string, params: any[] = []): Promise<T | undefined> => {
+  if (isTurso) {
+    try {
+      const res = await libsqlClient.execute({ sql, args: params });
+      return res.rows[0] as unknown as T | undefined;
+    } catch (err: any) {
+      logSqlError(`Turso dbGet query: ${sql}`, err);
+      throw err;
+    }
+  } else {
+    return new Promise((resolve, reject) => {
+      db.get(sql, params, (err: any, row: any) => {
+        if (err) {
+          logSqlError(`dbGet query: ${sql}`, err);
+          reject(err);
+        } else {
+          resolve(row as T);
+        }
+      });
     });
-  });
+  }
 };
 
-export const dbAll = <T = any>(sql: string, params: any[] = []): Promise<T[]> => {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) {
-        logSqlError(`dbAll query: ${sql}`, err);
-        reject(err);
-      } else {
-        resolve(rows as T[]);
-      }
+export const dbAll = async <T = any>(sql: string, params: any[] = []): Promise<T[]> => {
+  if (isTurso) {
+    try {
+      const res = await libsqlClient.execute({ sql, args: params });
+      return res.rows as unknown as T[];
+    } catch (err: any) {
+      logSqlError(`Turso dbAll query: ${sql}`, err);
+      throw err;
+    }
+  } else {
+    return new Promise((resolve, reject) => {
+      db.all(sql, params, (err: any, rows: any[]) => {
+        if (err) {
+          logSqlError(`dbAll query: ${sql}`, err);
+          reject(err);
+        } else {
+          resolve(rows as T[]);
+        }
+      });
     });
-  });
+  }
 };
 
 export async function initDatabase() {
