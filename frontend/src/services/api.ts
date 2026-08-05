@@ -133,3 +133,10 @@ export const generateInvoicePdf = async (html: string): Promise<Blob> => {
   });
   return res.data;
 };
+
+// Authentication
+export const loginUserApi = async (username: string, password: string): Promise<{ success: boolean; token?: string; user?: any; message?: string }> => {
+  const res = await api.post('/auth/login', { username, password });
+  return res.data;
+};
+

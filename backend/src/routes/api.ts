@@ -31,8 +31,12 @@ import {
   deleteExpense,
   getExpenseSummary
 } from '../controllers/expenseController';
+import { loginUser } from '../controllers/authController';
 
 const router = Router();
+
+// Authentication
+router.post('/auth/login', loginUser);
 
 // Dashboard
 router.get('/dashboard/stats', getDashboardStats);

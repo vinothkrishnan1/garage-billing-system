@@ -89,7 +89,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
       setAdvanceAmount(bill.advance_amount);
       setComplaint(bill.complaint || '');
 
-      // Load items & pad to 30 rows
+      // Load items & pad to at least 30 rows
       const loadedItems = bill.items || [];
       const paddedItems = [...loadedItems];
       if (paddedItems.length < 30) {
@@ -111,6 +111,18 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
     }
   };
 
+  // Helper: Filter products that are ALREADY selected in other rows so they aren't shown in dropdown
+  const getAvailableProductsForIndex = (currentIdx: number) => {
+    const selectedNamesInOtherRows = new Set(
+      items
+        .filter((_, i) => i !== currentIdx)
+        .map((item) => item.product_name.trim().toUpperCase())
+        .filter((name) => name !== '')
+    );
+
+    return products.filter((p) => !selectedNamesInOtherRows.has(p.name.trim().toUpperCase()));
+  };
+
   // Handle Vehicle Selection Autocomplete
   const handleVehicleChange = (val: string, option?: any) => {
     setVehicleNumber(val);
@@ -125,8 +137,27 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
     }
   };
 
-  // Handle Item Row Updates
+  // Handle Item Row Updates with Duplicate Prevention
   const handleItemChange = (index: number, field: keyof BillItem, val: any) => {
+    setErrorMsg('');
+
+    // Check for Duplicate Item Selection
+    if (field === 'product_name') {
+      const inputNameUpper = String(val).trim().toUpperCase();
+      if (inputNameUpper !== '') {
+        const isDuplicate = items.some(
+          (item, i) => i !== index && item.product_name.trim().toUpperCase() === inputNameUpper
+        );
+        if (isDuplicate) {
+          setErrorMsg('This item has already been added to the bill.');
+          const resetItems = [...items];
+          resetItems[index] = { ...resetItems[index], product_name: '', amount: '' };
+          setItems(resetItems);
+          return;
+        }
+      }
+    }
+
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: val };
 
@@ -187,7 +218,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
   const advanceNum = Number(advanceAmount) || 0;
   const calculatedBalance = Math.max(0, calculatedTotal - advanceNum);
 
-  // Form Validation
+  // Form Validation including Duplicate Checks
   const validateForm = (): boolean => {
     setErrorMsg('');
 
@@ -196,15 +227,21 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
       return false;
     }
 
-
-    // Filter non-empty items
     const validItems = items.filter((item) => item.product_name.trim() !== '');
     if (validItems.length === 0) {
       setErrorMsg('Please enter at least one product line in the bill table');
       return false;
     }
 
+    const seenItemNames = new Set<string>();
     for (const item of validItems) {
+      const nameUpper = item.product_name.trim().toUpperCase();
+      if (seenItemNames.has(nameUpper)) {
+        setErrorMsg('This item has already been added to the bill.');
+        return false;
+      }
+      seenItemNames.add(nameUpper);
+
       if (Number(item.amount) < 0) {
         setErrorMsg(`Negative amount found for product "${item.product_name}"`);
         return false;
@@ -286,10 +323,23 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
     setSuccessMsg('');
   };
 
-  return (
-    <div className="space-y-6">
+  // Filter items for mobile card rendering (showing all non-empty items + at least 1 blank row)
+  const filledItemIndices = items
+    .map((item, idx) => (item.product_name.trim() !== '' || Number(item.amount) > 0 ? idx : -1))
+    .filter((idx) => idx !== -1);
 
-      {/* Top Banner */}
+  // If no items filled, show index 0
+  const mobileDisplayIndices = filledItemIndices.length > 0 ? filledItemIndices : [0];
+  // Always include the next blank row index for mobile if available
+  const lastFilledIdx = Math.max(...mobileDisplayIndices);
+  if (lastFilledIdx + 1 < items.length && !mobileDisplayIndices.includes(lastFilledIdx + 1)) {
+    mobileDisplayIndices.push(lastFilledIdx + 1);
+  }
+
+  return (
+    <div className="space-y-6 pb-8">
+
+      {/* Top Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
         <div>
           <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
@@ -300,43 +350,24 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
+        {/* Header Action: Reset Button */}
+        <div className="flex items-center space-x-2">
           <button
             type="button"
             onClick={handleReset}
-            className="flex items-center justify-center space-x-1.5 px-3 py-2 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors w-full sm:w-auto"
+            className="flex items-center justify-center space-x-1.5 px-3.5 py-2 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-all shadow-xs"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleSaveBill(false)}
-            disabled={loading}
-            className="flex items-center justify-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors shadow-sm disabled:opacity-50 w-full sm:w-auto"
-          >
-            <Save className="w-4 h-4" />
-            <span>{loading ? 'Saving...' : 'Save Bill'}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleSaveBill(true)}
-            disabled={loading}
-            className="flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors shadow-sm disabled:opacity-50 w-full sm:w-auto"
-          >
-            <Printer className="w-4 h-4" />
-            <span>Save & Print</span>
+            <span>Reset Form</span>
           </button>
         </div>
       </div>
 
       {/* Notifications */}
       {errorMsg && (
-        <div className="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-xl text-sm flex items-center space-x-2">
+        <div className="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-xl text-sm flex items-center space-x-2 animate-pulse">
           <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
-          <span>{errorMsg}</span>
+          <span className="font-semibold">{errorMsg}</span>
         </div>
       )}
 
@@ -346,12 +377,12 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
         </div>
       )}
 
-      {/* Form Container */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+      {/* Main Form Container */}
+      <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
 
         {/* Section 1: Customer & Vehicle Information */}
         <div>
-          <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 border-b border-slate-200 pb-2 mb-4">
+          <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-800 border-b border-slate-200 pb-2 mb-4">
             Customer & Vehicle Information
           </h2>
 
@@ -364,7 +395,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
                 type="date"
                 value={billDate}
                 onChange={(e) => setBillDate(e.target.value)}
-                className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-md text-sm font-medium focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 sm:py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               />
             </div>
 
@@ -392,7 +423,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
                 value={vehicleModel}
                 onChange={(e) => setVehicleModel(e.target.value)}
                 placeholder="e.g. HIMALAYAN"
-                className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-md text-sm font-medium focus:ring-2 focus:ring-indigo-500 uppercase"
+                className="w-full px-3 py-2 sm:py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none uppercase"
               />
             </div>
 
@@ -404,7 +435,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="e.g. Vignesh"
-                className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-md text-sm font-medium focus:ring-2 focus:ring-indigo-500 uppercase"
+                className="w-full px-3 py-2 sm:py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none uppercase"
               />
             </div>
 
@@ -416,7 +447,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
                 value={mobileNumber}
                 onChange={(e) => setMobileNumber(e.target.value)}
                 placeholder="e.g. 1234567890"
-                className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-md text-sm font-medium focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 sm:py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               />
             </div>
 
@@ -428,7 +459,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
                 value={kmDriven}
                 onChange={(e) => setKmDriven(e.target.value === '' ? '' : Number(e.target.value))}
                 placeholder="e.g. 18047"
-                className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-md text-sm font-medium focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 sm:py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               />
             </div>
 
@@ -438,13 +469,14 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
         {/* Section 2: Product Entry Grid */}
         <div>
           <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-800">
+            <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-800">
               Product & Labour Items ({items.filter(i => i.product_name.trim() !== '').length} filled)
             </h2>
-            <span className="text-xs text-slate-500 font-medium">Auto-expands on last row</span>
+            <span className="text-[11px] sm:text-xs text-slate-500 font-medium">Auto-expands on last row</span>
           </div>
 
-          <div className="overflow-x-auto border border-slate-300 rounded-lg max-h-[500px]">
+          {/* Desktop & Tablet Table View (Hidden on mobile < 640px) */}
+          <div className="hidden sm:block overflow-x-auto border border-slate-300 rounded-lg max-h-[500px]">
             <table className="w-full min-w-[700px] text-left text-xs border-collapse">
               <thead className="bg-slate-800 text-white font-bold uppercase sticky top-0 z-20">
                 <tr>
@@ -460,13 +492,13 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
                   <tr key={idx} className="hover:bg-indigo-50/40 transition-colors">
                     <td className="px-3 py-1 text-center font-bold text-slate-500">{item.s_no}</td>
 
-                    {/* Searchable Product Autocomplete */}
+                    {/* Searchable Product Autocomplete - Excludes products selected on other rows */}
                     <td className="px-2 py-1">
                       <AutocompleteSelect
                         value={item.product_name}
                         onChange={(val) => handleItemChange(idx, 'product_name', val)}
                         placeholder="Search or type product name..."
-                        options={products.map((p) => ({
+                        options={getAvailableProductsForIndex(idx).map((p) => ({
                           label: p.name,
                           value: p.name,
                           sublabel: `Price: ₹${p.selling_price.toLocaleString('en-IN')}`
@@ -517,14 +549,88 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
             </table>
           </div>
 
-          <div className="mt-2 flex justify-start">
+          {/* Mobile Card / Touch-Friendly View (< 640px) */}
+          <div className="sm:hidden space-y-3">
+            {mobileDisplayIndices.map((idx) => {
+              const item = items[idx];
+              return (
+                <div key={idx} className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-3 relative shadow-xs">
+                  {/* Card Header: S.No & Delete */}
+                  <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-indigo-100 text-indigo-800">
+                      Item #{item.s_no}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteRow(idx)}
+                      className="text-slate-400 hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 transition-colors"
+                      title="Remove item"
+                    >
+                      <Trash2 className="w-4 h-4 text-rose-500" />
+                    </button>
+                  </div>
+
+                  {/* Product Autocomplete Input - Excludes products selected on other rows */}
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                      Product / Service Particular
+                    </label>
+                    <AutocompleteSelect
+                      value={item.product_name}
+                      onChange={(val) => handleItemChange(idx, 'product_name', val)}
+                      placeholder="Search or type product..."
+                      options={getAvailableProductsForIndex(idx).map((p) => ({
+                        label: p.name,
+                        value: p.name,
+                        sublabel: `Price: ₹${p.selling_price.toLocaleString('en-IN')}`
+                      }))}
+                    />
+                  </div>
+
+                  {/* Qty & Amount Side by Side */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                        Quantity
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        value={item.qty}
+                        onChange={(e) => handleItemChange(idx, 'qty', e.target.value === '' ? '' : Number(e.target.value))}
+                        placeholder="1"
+                        className="w-full text-center px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                        Amount (₹)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        value={item.amount}
+                        onChange={(e) => handleItemChange(idx, 'amount', e.target.value === '' ? '' : Number(e.target.value))}
+                        placeholder="0.00"
+                        className="w-full text-right px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-3 flex justify-start">
             <button
               type="button"
               onClick={handleAddRow}
-              className="flex items-center space-x-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-md border border-indigo-200 transition-colors"
+              className="flex items-center space-x-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3.5 py-2 rounded-lg border border-indigo-200 transition-colors shadow-xs"
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add Blank Row</span>
+              <Plus className="w-4 h-4" />
+              <span>Add Item Row</span>
             </button>
           </div>
         </div>
@@ -542,7 +648,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
               value={complaint}
               onChange={(e) => setComplaint(e.target.value)}
               placeholder="e.g. General Service, Front & Rear brake noise check, Chain adjustment."
-              className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-500"
+              className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             ></textarea>
             <p className="text-[11px] font-semibold text-slate-400 italic">
               Appears on the printed invoice under COMPLAINT block.
@@ -570,7 +676,7 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
                   value={advanceAmount}
                   onChange={(e) => setAdvanceAmount(e.target.value === '' ? '' : Number(e.target.value))}
                   placeholder="0.00"
-                  className="w-full text-right px-3 py-1 bg-white border border-slate-300 rounded text-sm font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500"
+                  className="w-full text-right px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
             </div>
@@ -592,6 +698,38 @@ export const Billing: React.FC<BillingProps> = ({ editBillId, onFinishSave }) =>
 
           </div>
 
+        </div>
+
+        {/* Relocated Action Buttons Section - Placed Below "For Vicky's Garage" Section */}
+        <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-end gap-3 w-full">
+          <button
+            type="button"
+            onClick={handleReset}
+            className="w-full sm:w-auto flex items-center justify-center space-x-2 px-5 py-3 sm:py-2.5 text-xs sm:text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-all shadow-xs"
+          >
+            <RotateCcw className="w-4 h-4" />
+            <span>Reset</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSaveBill(false)}
+            disabled={loading}
+            className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 sm:py-2.5 rounded-xl text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50"
+          >
+            <Save className="w-4 h-4" />
+            <span>{loading ? 'Saving...' : 'Save Bill'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSaveBill(true)}
+            disabled={loading}
+            className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 sm:py-2.5 rounded-xl text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50"
+          >
+            <Printer className="w-4 h-4" />
+            <span>Save & Print</span>
+          </button>
         </div>
 
       </div>

@@ -6,13 +6,29 @@ import { BillHistory } from './pages/BillHistory';
 import { ProductMaster } from './pages/ProductMaster';
 import { CustomerMaster } from './pages/CustomerMaster';
 import { Expenses } from './pages/Expenses';
+import { Login } from './pages/Login';
 import { Bill } from './types';
 import { InvoicePrintModal } from './components/InvoicePrintModal';
 
 export const App: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return localStorage.getItem('vicky_garage_auth_token') !== null;
+  });
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [editingBillId, setEditingBillId] = useState<number | null>(null);
   const [viewingBill, setViewingBill] = useState<Bill | null>(null);
+
+  const handleLoginSuccess = (token: string, user: any) => {
+    localStorage.setItem('vicky_garage_auth_token', token);
+    localStorage.setItem('vicky_garage_user', JSON.stringify(user));
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('vicky_garage_auth_token');
+    localStorage.removeItem('vicky_garage_user');
+    setIsAuthenticated(false);
+  };
 
   const handleQuickNewBill = () => {
     setEditingBillId(null);
@@ -29,8 +45,13 @@ export const App: React.FC = () => {
     setActiveTab('history');
   };
 
+  // If user is not authenticated, show secure Login Screen ONLY
+  if (!isAuthenticated) {
+    return <Login onLoginSuccess={handleLoginSuccess} />;
+  }
+
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-900">
+    <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-900 w-full max-w-full overflow-x-hidden">
       
       {/* Top Navbar */}
       <Navbar
@@ -40,10 +61,11 @@ export const App: React.FC = () => {
           setActiveTab(tab);
         }}
         onQuickNewBill={handleQuickNewBill}
+        onLogout={handleLogout}
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="flex-1 max-w-7xl w-full max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 overflow-x-hidden">
         {activeTab === 'dashboard' && (
           <Dashboard
             onNewBill={handleQuickNewBill}
