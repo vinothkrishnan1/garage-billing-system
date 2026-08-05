@@ -15,7 +15,7 @@
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.3",
     "puppeteer": "^25.4.0",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^6.0.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
