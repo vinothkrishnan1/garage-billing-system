@@ -212,6 +212,16 @@ export async function initDatabase() {
     );
   `);
 
+  // Create Indexes for High Performance Querying
+  await dbRun('CREATE INDEX IF NOT EXISTS idx_bills_date ON bills(bill_date);');
+  await dbRun('CREATE INDEX IF NOT EXISTS idx_bills_vehicle ON bills(vehicle_number);');
+  await dbRun('CREATE INDEX IF NOT EXISTS idx_bills_bill_no ON bills(bill_no);');
+  await dbRun('CREATE INDEX IF NOT EXISTS idx_customers_vehicle ON customers(vehicle_number);');
+  await dbRun('CREATE INDEX IF NOT EXISTS idx_customers_mobile ON customers(mobile_number);');
+  await dbRun('CREATE INDEX IF NOT EXISTS idx_products_name ON products(name);');
+  await dbRun('CREATE INDEX IF NOT EXISTS idx_bill_items_bill_id ON bill_items(bill_id);');
+  await dbRun('CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(date);');
+
   // Seed sample products & customers if empty
   const productCount = await dbGet<{ count: number }>('SELECT COUNT(*) as count FROM products');
   if (productCount && productCount.count === 0) {

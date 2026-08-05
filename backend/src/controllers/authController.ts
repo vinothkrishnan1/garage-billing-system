@@ -1,15 +1,9 @@
 import { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../middleware/authMiddleware';
 
-// Configured login credentials
 const CONFIG_USERNAME = (process.env.LOGIN_USERNAME || 'adminer').trim().toLowerCase();
 const CONFIG_PASSWORD = process.env.LOGIN_PASSWORD || 'Sh@nV!';
-
-// Accepted credentials list
-const ACCEPTED_CREDENTIALS = [
-  { username: CONFIG_USERNAME, password: CONFIG_PASSWORD },
-  { username: 'adminer', password: 'Sh@nV!' },
-  { username: 'admin', password: 'password' }
-];
 
 export const loginUser = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -26,20 +20,23 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     const inputUser = String(username).trim().toLowerCase();
     const inputPass = String(password).trim();
 
-    const isValid = ACCEPTED_CREDENTIALS.some(
-      (cred) => cred.username === inputUser && cred.password === inputPass
-    );
+    // Check against configured admin credentials from environment or secured defaults
+    const isValid = inputUser === CONFIG_USERNAME && inputPass === CONFIG_PASSWORD;
 
     if (isValid) {
+      const payload = {
+        username: inputUser,
+        role: 'admin',
+        name: "Vicky's Garage Admin"
+      };
+
+      const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+
       res.status(200).json({
         success: true,
         message: 'Login successful',
-        user: {
-          username: inputUser,
-          role: 'admin',
-          name: "Vicky's Garage Admin"
-        },
-        token: `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        user: payload,
+        token
       });
     } else {
       res.status(401).json({

@@ -15,7 +15,8 @@ export const getCustomers = async (req: Request, res: Response) => {
     const customers = await dbAll(sql, params);
     res.json({ success: true, data: customers });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Customer Controller Error:', error);
+    res.status(500).json({ success: false, message: 'An error occurred while processing your request.' });
   }
 };
 
@@ -28,7 +29,8 @@ export const getCustomerByVehicle = async (req: Request, res: Response) => {
     }
     res.json({ success: true, data: customer });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Customer Controller Error:', error);
+    res.status(500).json({ success: false, message: 'An error occurred while processing your request.' });
   }
 };
 
@@ -53,7 +55,8 @@ export const createCustomer = async (req: Request, res: Response) => {
     const newCust = await dbGet('SELECT * FROM customers WHERE id = ?', [result.lastID]);
     res.status(201).json({ success: true, data: newCust });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Customer Controller Error:', error);
+    res.status(500).json({ success: false, message: 'An error occurred while processing your request.' });
   }
 };
 
@@ -91,7 +94,8 @@ export const updateCustomer = async (req: Request, res: Response) => {
     const updated = await dbGet('SELECT * FROM customers WHERE id = ?', [id]);
     res.json({ success: true, data: updated });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Customer Controller Error:', error);
+    res.status(500).json({ success: false, message: 'An error occurred while processing your request.' });
   }
 };
 
@@ -106,6 +110,7 @@ export const deleteCustomer = async (req: Request, res: Response) => {
     await dbRun('DELETE FROM customers WHERE id = ?', [id]);
     res.json({ success: true, message: 'Customer deleted successfully' });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Customer Controller Error:', error);
+    res.status(500).json({ success: false, message: 'An error occurred while processing your request.' });
   }
 };

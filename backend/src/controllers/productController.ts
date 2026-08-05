@@ -14,7 +14,8 @@ export const getProducts = async (req: Request, res: Response) => {
     const products = await dbAll(sql, params);
     res.json({ success: true, data: products });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Product Controller Error:', error);
+    res.status(500).json({ success: false, message: 'An error occurred while processing your request.' });
   }
 };
 
@@ -27,7 +28,8 @@ export const getProductById = async (req: Request, res: Response) => {
     }
     res.json({ success: true, data: product });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Product Controller Error:', error);
+    res.status(500).json({ success: false, message: 'An error occurred while processing your request.' });
   }
 };
 
@@ -52,7 +54,8 @@ export const createProduct = async (req: Request, res: Response) => {
     const newProduct = await dbGet('SELECT * FROM products WHERE id = ?', [result.lastID]);
     res.status(201).json({ success: true, data: newProduct });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Product Controller Error:', error);
+    res.status(500).json({ success: false, message: 'An error occurred while processing your request.' });
   }
 };
 
@@ -84,7 +87,8 @@ export const updateProduct = async (req: Request, res: Response) => {
     const updated = await dbGet('SELECT * FROM products WHERE id = ?', [id]);
     res.json({ success: true, data: updated });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Product Controller Error:', error);
+    res.status(500).json({ success: false, message: 'An error occurred while processing your request.' });
   }
 };
 
@@ -99,6 +103,7 @@ export const deleteProduct = async (req: Request, res: Response) => {
     await dbRun('DELETE FROM products WHERE id = ?', [id]);
     res.json({ success: true, message: 'Product deleted successfully' });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Product Controller Error:', error);
+    res.status(500).json({ success: false, message: 'An error occurred while processing your request.' });
   }
 };

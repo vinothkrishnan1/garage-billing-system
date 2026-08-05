@@ -67,7 +67,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNewBill, onViewBill, onV
 
       {/* KPI Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        
+
         {/* Today's Revenue */}
         <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">

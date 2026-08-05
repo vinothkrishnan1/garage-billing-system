@@ -10,6 +10,34 @@ const api = axios.create({
   }
 });
 
+// Request Interceptor: Attach JWT Token automatically if present
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('vicky_garage_auth_token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Response Interceptor: Handle 401 Unauthorized globally
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Clear expired or invalid credentials
+      localStorage.removeItem('vicky_garage_auth_token');
+      localStorage.removeItem('vicky_garage_user');
+      if (window.location.pathname !== '/') {
+        window.location.reload();
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Dashboard
 export const fetchDashboardStats = async (): Promise<DashboardStats> => {
   const res = await api.get('/dashboard/stats');

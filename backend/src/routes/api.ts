@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { authenticateToken } from '../middleware/authMiddleware';
 import {
   getProducts,
   getProductById,
@@ -35,8 +36,16 @@ import { loginUser } from '../controllers/authController';
 
 const router = Router();
 
-// Authentication
+// Public routes
 router.post('/auth/login', loginUser);
+
+// Server Date Util (used by frontend for synchronization)
+router.get('/server-date', (req, res) => {
+  res.json({ success: true, date: new Date().toISOString().split('T')[0] });
+});
+
+// Protected routes (Require JWT Token)
+router.use(authenticateToken);
 
 // Dashboard
 router.get('/dashboard/stats', getDashboardStats);
@@ -71,10 +80,5 @@ router.get('/expenses/:id', getExpenseById);
 router.post('/expenses', createExpense);
 router.put('/expenses/:id', updateExpense);
 router.delete('/expenses/:id', deleteExpense);
-
-// Server Date Util
-router.get('/server-date', (req, res) => {
-  res.json({ success: true, date: new Date().toISOString().split('T')[0] });
-});
 
 export default router;

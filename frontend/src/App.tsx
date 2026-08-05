@@ -1,14 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { Navbar } from './components/Navbar';
-import { Dashboard } from './pages/Dashboard';
-import { Billing } from './pages/Billing';
-import { BillHistory } from './pages/BillHistory';
-import { ProductMaster } from './pages/ProductMaster';
-import { CustomerMaster } from './pages/CustomerMaster';
-import { Expenses } from './pages/Expenses';
 import { Login } from './pages/Login';
 import { Bill } from './types';
 import { InvoicePrintModal } from './components/InvoicePrintModal';
+
+// Lazy load page components for optimized bundle size & fast initial loads
+const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
+const Billing = lazy(() => import('./pages/Billing').then(m => ({ default: m.Billing })));
+const BillHistory = lazy(() => import('./pages/BillHistory').then(m => ({ default: m.BillHistory })));
+const ProductMaster = lazy(() => import('./pages/ProductMaster').then(m => ({ default: m.ProductMaster })));
+const CustomerMaster = lazy(() => import('./pages/CustomerMaster').then(m => ({ default: m.CustomerMaster })));
+const Expenses = lazy(() => import('./pages/Expenses').then(m => ({ default: m.Expenses })));
+
+const PageLoader: React.FC = () => (
+  <div className="flex items-center justify-center min-h-[300px]">
+    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
+  </div>
+);
 
 export const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
@@ -66,32 +74,34 @@ export const App: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 overflow-x-hidden">
-        {activeTab === 'dashboard' && (
-          <Dashboard
-            onNewBill={handleQuickNewBill}
-            onViewBill={(bill) => setViewingBill(bill)}
-            onViewAllHistory={() => setActiveTab('history')}
-          />
-        )}
+        <Suspense fallback={<PageLoader />}>
+          {activeTab === 'dashboard' && (
+            <Dashboard
+              onNewBill={handleQuickNewBill}
+              onViewBill={(bill) => setViewingBill(bill)}
+              onViewAllHistory={() => setActiveTab('history')}
+            />
+          )}
 
-        {activeTab === 'billing' && (
-          <Billing
-            editBillId={editingBillId}
-            onFinishSave={handleFinishSave}
-          />
-        )}
+          {activeTab === 'billing' && (
+            <Billing
+              editBillId={editingBillId}
+              onFinishSave={handleFinishSave}
+            />
+          )}
 
-        {activeTab === 'history' && (
-          <BillHistory
-            onEditBill={handleEditBill}
-          />
-        )}
+          {activeTab === 'history' && (
+            <BillHistory
+              onEditBill={handleEditBill}
+            />
+          )}
 
-        {activeTab === 'expenses' && <Expenses />}
+          {activeTab === 'expenses' && <Expenses />}
 
-        {activeTab === 'customers' && <CustomerMaster />}
+          {activeTab === 'customers' && <CustomerMaster />}
 
-        {activeTab === 'products' && <ProductMaster />}
+          {activeTab === 'products' && <ProductMaster />}
+        </Suspense>
       </main>
 
       {/* Viewing / Reprinting Modal from Dashboard */}
